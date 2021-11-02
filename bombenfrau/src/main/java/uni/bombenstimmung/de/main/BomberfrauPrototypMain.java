@@ -11,6 +11,7 @@ package uni.bombenstimmung.de.main;
 
 import java.util.Scanner;
 
+import uni.bombenstimmung.de.graphics.GraphicsHandler;
 import uni.bombenstimmung.de.serverconnection.ClientConnection;
 import uni.bombenstimmung.de.serverconnection.ServerConnection;
 
@@ -23,6 +24,9 @@ public class BomberfrauPrototypMain {
 	public static void main(String[] args) {
 		
 		ConsoleDebugger.printMessage("Starting Bomberfrau PROTOTYP!");
+		
+		//START GRAPHICS
+		GraphicsHandler.initGraphics();
 		
 		//USAGE: 2 Mal das Programm starten und dann ersten mit s und zweiten mit c starten... dann connected client zum server
 		ConsoleDebugger.printMessage("Server or Client or Autoclient? (s|c)");
