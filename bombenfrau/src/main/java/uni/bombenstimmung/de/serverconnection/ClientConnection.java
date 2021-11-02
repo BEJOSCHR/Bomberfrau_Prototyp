@@ -10,7 +10,6 @@
 package uni.bombenstimmung.de.serverconnection;
 
 import java.io.IOException;
-import java.net.InetAddress;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
@@ -35,46 +34,6 @@ public class ClientConnection extends Listener {
 		
 		try {
 			ConnectionData.client.connect(5000, ConnectionData.IP, ConnectionData.TCP_PORT);
-		} catch (IOException error) {
-			ConsoleDebugger.printMessage("Connecting to server '"+ConnectionData.IP+"' on port '"+ConnectionData.TCP_PORT+"' failed with error: ");
-			error.printStackTrace();
-			return;
-		}
-		
-		Kryo kryo = ConnectionData.client.getKryo();
-		kryo.register(PingRequest.class);
-		kryo.register(PingResponse.class);
-		
-		ConnectionData.client.addListener(new ClientConnection());
-		
-		ConsoleDebugger.printMessage(" connected!");
-		
-		//Test package
-		ConsoleDebugger.printMessage("Sending ping request ("+System.currentTimeMillis()+")...");
-		ConnectionData.client.sendTCP(new PingRequest());
-		
-		while(true) {}
-		
-	}
-	
-	/**
-	 * Versucht eine Serververbindung aufzubauen ohne die gegebene IP zu nutzen (Localhost suche) und registriert alle sendbaren und empfangbaren Packet-Klassen
-	 */
-	public static void autoConnectToServer() {
-		
-		ConnectionData.client = new Client();
-		ConnectionData.client.start();
-		
-		ConsoleDebugger.printMessage("Searching for server on Port '"+ConnectionData.TCP_PORT+"'");
-		InetAddress address = ConnectionData.client.discoverHost(ConnectionData.UDP_PORT, ConnectionData.TIMEOUT_DELAY);
-		if(address == null) {
-			ConsoleDebugger.printMessage("No localhost server found!");
-			return;
-		}
-		
-		ConsoleDebugger.printMessage("Connecting to server on '"+address+":"+ConnectionData.TCP_PORT+"'...", false);
-		try {
-			ConnectionData.client.connect(5000, address, ConnectionData.TCP_PORT);
 		} catch (IOException error) {
 			ConsoleDebugger.printMessage("Connecting to server '"+ConnectionData.IP+"' on port '"+ConnectionData.TCP_PORT+"' failed with error: ");
 			error.printStackTrace();

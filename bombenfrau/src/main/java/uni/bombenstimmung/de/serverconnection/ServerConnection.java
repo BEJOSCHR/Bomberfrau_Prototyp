@@ -31,9 +31,9 @@ public class ServerConnection extends Listener {
 		ConnectionData.server.start();
 		
 		try {
-			ConnectionData.server.bind(ConnectionData.TCP_PORT, ConnectionData.UDP_PORT);
+			ConnectionData.server.bind(ConnectionData.TCP_PORT);
 		} catch (IOException error) {
-			ConsoleDebugger.printMessage("Binding server to port '"+ConnectionData.TCP_PORT+":"+ConnectionData.UDP_PORT+"' failed with error: ");
+			ConsoleDebugger.printMessage("Binding server to port '"+ConnectionData.TCP_PORT+"' failed with error: ");
 			error.printStackTrace();
 			return;
 		}
