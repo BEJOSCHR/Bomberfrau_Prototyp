@@ -2,5 +2,9 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="D:/Coden/Java Games/KryoNet Serverconnection/kryonet-2.21/java/build/junit-4.6.jar"/>
+	<classpathentry kind="lib" path="D:/Coden/Java Games/KryoNet Serverconnection/kryonet-2.21/java/build/kryo-2.20.jar"/>
+	<classpathentry kind="lib" path="D:/Coden/Java Games/KryoNet Serverconnection/kryonet-2.21/java/build/minlog-none-1.2.jar"/>
+	<classpathentry kind="lib" path="D:/Coden/Java Games/KryoNet Serverconnection/KryoNet-2.21.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

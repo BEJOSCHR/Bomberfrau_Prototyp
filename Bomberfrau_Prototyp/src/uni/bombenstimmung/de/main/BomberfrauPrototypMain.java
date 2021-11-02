@@ -1,18 +1,41 @@
+/*
+ * BomberfrauPrototypMain
+ *
+ * Version 1.0
+ * Author: Benni
+ *
+ * Der Beginn des Prototyps
+ */
+
 package uni.bombenstimmung.de.main;
 
+import java.util.Scanner;
+
+import uni.bombenstimmung.de.serverconnection.ServerConnection;
 
 public class BomberfrauPrototypMain {
 
 	/**
-	 * The start of everything (in this program)
-	 * @param args The arguments which are added to the start argument
+	 * Der Start von allem (in diesem Projekt)
+	 * @param args Die Argumente die dem Start mitgegeben werden können
 	 */
 	public static void main(String[] args) {
 		
-		System.out.println("Starting Bomberfrau PROTOTYP, juhu!");
+		ConsoleDebugger.printMessage("Starting Bomberfrau PROTOTYP!");
 		
-		//Start Graphics
-//		GraphicsHandler.initGraphics();
+		ConsoleDebugger.printMessage("Server or Client? (s|c)");
+		Scanner userInputScanner = new Scanner(System.in);
+		String userInput = userInputScanner.nextLine();
+		userInputScanner.close();
+		if(userInput.equals("s")) {
+			//Server
+			ServerConnection.openServerConnection();
+		}else if(userInput.equals("c")) {
+			//Client
+			//TODO
+		}else {
+			ConsoleDebugger.printMessage("Invalid answer! Please restart...");
+		}
 		
 	}
 	
