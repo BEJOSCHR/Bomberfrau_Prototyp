@@ -18,6 +18,8 @@ public class ConnectionData {
 	public static Client client;
 	
 	public static final String IP = "127.0.0.1";
-	public static final int PORT = 25652;
+	public static final int TCP_PORT = 25652;
+	public static final int UDP_PORT = 25752;
+	public static final int TIMEOUT_DELAY = 5000;
 	
 }

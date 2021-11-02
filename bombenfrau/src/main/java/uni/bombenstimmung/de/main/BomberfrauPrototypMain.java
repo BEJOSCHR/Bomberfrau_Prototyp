@@ -25,7 +25,7 @@ public class BomberfrauPrototypMain {
 		ConsoleDebugger.printMessage("Starting Bomberfrau PROTOTYP!");
 		
 		//USAGE: 2 Mal das Programm starten und dann ersten mit s und zweiten mit c starten... dann connected client zum server
-		ConsoleDebugger.printMessage("Server or Client? (s|c)");
+		ConsoleDebugger.printMessage("Server or Client or Autoclient? (s|c|a)");
 		Scanner userInputScanner = new Scanner(System.in);
 		String userInput = userInputScanner.nextLine();
 		userInputScanner.close();
@@ -35,6 +35,9 @@ public class BomberfrauPrototypMain {
 		}else if(userInput.equals("c")) {
 			//Client
 			ClientConnection.connectToServer();
+		}else if(userInput.equals("a")) {
+			//Auto Client
+			ClientConnection.autoConnectToServer();
 		}else {
 			ConsoleDebugger.printMessage("Invalid answer! Please restart...");
 		}

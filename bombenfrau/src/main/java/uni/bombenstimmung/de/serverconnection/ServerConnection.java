@@ -31,9 +31,9 @@ public class ServerConnection extends Listener {
 		ConnectionData.server.start();
 		
 		try {
-			ConnectionData.server.bind(ConnectionData.PORT);
+			ConnectionData.server.bind(ConnectionData.TCP_PORT, ConnectionData.UDP_PORT);
 		} catch (IOException error) {
-			ConsoleDebugger.printMessage("Binding server to port '"+ConnectionData.PORT+"' failed with error: ");
+			ConsoleDebugger.printMessage("Binding server to port '"+ConnectionData.TCP_PORT+":"+ConnectionData.UDP_PORT+"' failed with error: ");
 			error.printStackTrace();
 			return;
 		}
@@ -44,7 +44,7 @@ public class ServerConnection extends Listener {
 		
 		ConnectionData.server.addListener(new ServerConnection());
 		
-		ConsoleDebugger.printMessage("Started server! Listening on port '"+ConnectionData.PORT+"'");
+		ConsoleDebugger.printMessage("Started server! Listening on port '"+ConnectionData.TCP_PORT+"'");
 		
 		while(true) {}
 		
