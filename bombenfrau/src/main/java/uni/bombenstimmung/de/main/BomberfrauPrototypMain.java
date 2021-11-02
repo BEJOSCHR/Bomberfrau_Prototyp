@@ -24,6 +24,7 @@ public class BomberfrauPrototypMain {
 		
 		ConsoleDebugger.printMessage("Starting Bomberfrau PROTOTYP!");
 		
+		//USAGE: 2 Mal das Programm starten und dann ersten mit s und zweiten mit c starten... dann connected client zum server
 		ConsoleDebugger.printMessage("Server or Client? (s|c)");
 		Scanner userInputScanner = new Scanner(System.in);
 		String userInput = userInputScanner.nextLine();
