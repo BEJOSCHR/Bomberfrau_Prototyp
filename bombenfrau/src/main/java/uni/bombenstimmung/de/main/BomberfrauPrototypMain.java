@@ -29,7 +29,7 @@ public class BomberfrauPrototypMain {
 		GraphicsHandler.initGraphics();
 		
 		//USAGE: 2 Mal das Programm starten und dann ersten mit s und zweiten mit c starten... dann connected client zum server
-		ConsoleDebugger.printMessage("Server or Client or Autoclient? (s|c)");
+		ConsoleDebugger.printMessage("Server or Client? (s|c)");
 		Scanner userInputScanner = new Scanner(System.in);
 		String userInput = userInputScanner.nextLine();
 		userInputScanner.close();

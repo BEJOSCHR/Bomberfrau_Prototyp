@@ -33,8 +33,9 @@ public class ClientConnection extends Listener {
 		ConsoleDebugger.printMessage("Connecting to server on '"+ConnectionData.IP+":"+ConnectionData.TCP_PORT+"'...", false);
 		
 		try {
-			ConnectionData.client.connect(5000, ConnectionData.IP, ConnectionData.TCP_PORT);
+			ConnectionData.client.connect(ConnectionData.TIMEOUT_DELAY, ConnectionData.IP, ConnectionData.TCP_PORT);
 		} catch (IOException error) {
+			ConsoleDebugger.printMessage(" failed!");
 			ConsoleDebugger.printMessage("Connecting to server '"+ConnectionData.IP+"' on port '"+ConnectionData.TCP_PORT+"' failed with error: ");
 			error.printStackTrace();
 			return;
