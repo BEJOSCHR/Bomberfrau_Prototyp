@@ -14,6 +14,7 @@ import java.awt.*;
 import javax.swing.JLabel;
 
 import uni.bombenstimmung.de.handler.MouseActionAreaHandler;
+import uni.bombenstimmung.de.main.ConsoleDebugger;
 import uni.bombenstimmung.de.objects.MouseActionArea;
 
 @SuppressWarnings("serial")
@@ -60,9 +61,25 @@ public class Label extends JLabel {
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		//PARTS: (Reihenfolge der Aufrufe ist wichtig)
-		draw_Background(g);
-		draw_Title(g);
+		//(Reihenfolge der Aufrufe ist wichtig, spätere Aufrufe überschreiben frühere)
+		
+		//PARTS
+		switch(GraphicsData.drawState) {
+		case AFTERGAME:
+			break;
+		case INGAME:
+			break;
+		case LOBBY:
+			break;
+		case MENU:
+			DrawParts.drawMenu(g);
+			break;
+		case OPTIONS:
+			break;
+		default:
+			ConsoleDebugger.printMessage("Illegal drawState! Can't draw part for state '"+GraphicsData.drawState+"'");
+			break;
+		}
 		
 		//MAA
 		for(MouseActionArea maa : MouseActionAreaHandler.mouseActionAreas) {
@@ -80,27 +97,6 @@ public class Label extends JLabel {
 		calculateFPS();
 		
 		repaint();
-		
-	}
-	
-	/**
-	 * Stellt den Titel dar
-	 */
-	private void draw_Title(Graphics g) {
-		
-		GraphicsHandler.drawCentralisedText(g, Color.WHITE, 26, "BOMBERFRAU", GraphicsData.width/2, GraphicsData.height/2-100);
-		
-		GraphicsHandler.drawCentralisedText(g, Color.WHITE, 20, "Prototyp", GraphicsData.width/2, GraphicsData.height/2-75);
-		
-	}
-
-	/**
-	 * Stellt den Hintergrund dar
-	 */
-	private void draw_Background(Graphics g) {
-		
-		g.setColor(Color.LIGHT_GRAY);
-		g.fillRect(0, 0, GraphicsData.width, GraphicsData.height);
 		
 	}
 	

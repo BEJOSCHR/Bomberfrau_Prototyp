@@ -17,7 +17,10 @@ import uni.bombenstimmung.de.serverconnection.ClientConnection;
 import uni.bombenstimmung.de.serverconnection.ServerConnection;
 
 public class BomberfrauPrototypMain {
-
+	
+	public static final String AUTHOR = "Bombenstimmung - Uni Wuppertal - ©2021";
+	public static final String VERSION = "Prototyp - Alpha - V0.0.1";
+	
 	/**
 	 * Der Start von allem (in diesem Projekt)
 	 * @param args Die Argumente die dem Start mitgegeben werden können

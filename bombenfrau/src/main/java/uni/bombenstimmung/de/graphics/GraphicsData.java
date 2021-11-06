@@ -19,4 +19,6 @@ public class GraphicsData {
 	public static JFrame frame;
 	public static JLabel label;
 	
+	public static DisplayType drawState = DisplayType.MENU;
+	
 }
