@@ -12,6 +12,7 @@ package uni.bombenstimmung.de.main;
 import java.util.Scanner;
 
 import uni.bombenstimmung.de.graphics.GraphicsHandler;
+import uni.bombenstimmung.de.handler.MouseActionAreaHandler;
 import uni.bombenstimmung.de.serverconnection.ClientConnection;
 import uni.bombenstimmung.de.serverconnection.ServerConnection;
 
@@ -25,8 +26,11 @@ public class BomberfrauPrototypMain {
 		
 		ConsoleDebugger.printMessage("Starting Bomberfrau PROTOTYP!");
 		
-		//START GRAPHICS
+		//START GRAPHICS (Muss als erstes sein da Frame width und height gesetzt werden)
 		GraphicsHandler.initGraphics();
+		
+		//MAA INIT
+		MouseActionAreaHandler.initMAAs();
 		
 		//USAGE: 2 Mal das Programm starten und dann ersten mit s und zweiten mit c starten... dann connected client zum server
 		ConsoleDebugger.printMessage("Server or Client? (s|c)");

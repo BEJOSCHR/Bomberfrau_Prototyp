@@ -14,7 +14,7 @@ import javax.swing.JLabel;
 
 public class GraphicsData {
 
-	public static final int WIDTH = 600, HEIGHT = 400;
+	public static int width = 0, height = 0; //Wird durch maxmised Frame gesetzt
 	
 	public static JFrame frame;
 	public static JLabel label;

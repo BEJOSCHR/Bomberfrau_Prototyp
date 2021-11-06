@@ -15,6 +15,8 @@ import java.awt.Graphics;
 
 import javax.swing.JFrame;
 
+import uni.bombenstimmung.de.handler.MouseHandler;
+
 public class GraphicsHandler {
 	
 	/**
@@ -31,8 +33,8 @@ public class GraphicsHandler {
 		g.setColor(color);
 		g.setFont(new Font("Arial", Font.BOLD, textSize));
 		int width = g.getFontMetrics().stringWidth(text);
-		int height = g.getFontMetrics().getHeight();
-		g.drawString(text, x-width/2, y-height/2);
+		int height = g.getFontMetrics().getHeight()*2/3;
+		g.drawString(text, x-width/2, y+height/2);
 		
 	}
 	
@@ -49,22 +51,25 @@ public class GraphicsHandler {
 	}
 	
 	/**
-	 * Erstellt den Frame
+	 * Erstellt einen eingestellten Frame
 	 * @return {@link JFrame} der eingestellte Frame
 	 */
 	private static JFrame createFrame() {
 		
 		JFrame tempFrame = new JFrame();
-		tempFrame.setVisible(true);
+		
 		tempFrame.setLocationRelativeTo(null);
-		tempFrame.setLocation(200, 150);
+		tempFrame.setLocation(0, 0);
 		tempFrame.setTitle("BomberFrau - Prototyp");
-		tempFrame.setResizable(false); 
+		tempFrame.setResizable(false);
 		tempFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		tempFrame.setUndecorated(true); 
+		tempFrame.setVisible(true);
+		
 //		tempFrame.addKeyListener(new InputHandler());
-//		tempFrame.addMouseListener(new InputHandler());
-//		tempFrame.addMouseMotionListener(new InputHandler());
-//		tempFrame.addMouseWheelListener(new InputHandler());
+		tempFrame.addMouseListener(new MouseHandler());
+		tempFrame.addMouseMotionListener(new MouseHandler());
+		tempFrame.addMouseWheelListener(new MouseHandler());
 //		tempFrame.addWindowListener(new InputHandler());
 		
 //		try { //TRY TO SET ICON
@@ -73,7 +78,14 @@ public class GraphicsHandler {
 //			System.out.println("The Window Icon couldn't be loaded!");
 //		}
 		
-		tempFrame.setSize(GraphicsData.WIDTH, GraphicsData.HEIGHT);
+		tempFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+//		Frame1.setSize(1400, 800);
+		tempFrame.setPreferredSize(tempFrame.getSize());
+		tempFrame.setMinimumSize(tempFrame.getSize());
+		tempFrame.setMaximumSize(tempFrame.getSize());
+		
+		GraphicsData.width = tempFrame.getWidth();
+		GraphicsData.height = tempFrame.getHeight();
 		
 		tempFrame.requestFocus();
 		

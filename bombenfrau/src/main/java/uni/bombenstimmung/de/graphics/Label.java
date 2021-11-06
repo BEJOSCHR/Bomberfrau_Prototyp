@@ -13,6 +13,9 @@ import java.awt.*;
 
 import javax.swing.JLabel;
 
+import uni.bombenstimmung.de.handler.MouseActionAreaHandler;
+import uni.bombenstimmung.de.objects.MouseActionArea;
+
 @SuppressWarnings("serial")
 public class Label extends JLabel {
 
@@ -30,7 +33,7 @@ public class Label extends JLabel {
 	 */
 	public Label() {
 		
-		this.setBounds(0, 0, GraphicsData.WIDTH, GraphicsData.HEIGHT);
+		this.setBounds(0, 0, GraphicsData.width, GraphicsData.height);
 		this.setVisible(true);
 		GraphicsData.frame.add(this, BorderLayout.CENTER);
 		
@@ -61,6 +64,13 @@ public class Label extends JLabel {
 		draw_Background(g);
 		draw_Title(g);
 		
+		//MAA
+		for(MouseActionArea maa : MouseActionAreaHandler.mouseActionAreas) {
+			if(maa.isActiv()) {
+				maa.draw(g);
+			}
+		}
+		
 		//DRAW FPS
 		g.setColor(Color.WHITE);
 		g.setFont(new Font("Arial", Font.BOLD, 10));
@@ -78,9 +88,9 @@ public class Label extends JLabel {
 	 */
 	private void draw_Title(Graphics g) {
 		
-		GraphicsHandler.drawCentralisedText(g, Color.WHITE, 26, "BOMBERFRAU", GraphicsData.WIDTH/2, GraphicsData.HEIGHT/2-100);
+		GraphicsHandler.drawCentralisedText(g, Color.WHITE, 26, "BOMBERFRAU", GraphicsData.width/2, GraphicsData.height/2-100);
 		
-		GraphicsHandler.drawCentralisedText(g, Color.WHITE, 20, "Prototyp", GraphicsData.WIDTH/2, GraphicsData.HEIGHT/2-75);
+		GraphicsHandler.drawCentralisedText(g, Color.WHITE, 20, "Prototyp", GraphicsData.width/2, GraphicsData.height/2-75);
 		
 	}
 
@@ -90,7 +100,7 @@ public class Label extends JLabel {
 	private void draw_Background(Graphics g) {
 		
 		g.setColor(Color.LIGHT_GRAY);
-		g.fillRect(0, 0, GraphicsData.WIDTH, GraphicsData.HEIGHT);
+		g.fillRect(0, 0, GraphicsData.width, GraphicsData.height);
 		
 	}
 	
