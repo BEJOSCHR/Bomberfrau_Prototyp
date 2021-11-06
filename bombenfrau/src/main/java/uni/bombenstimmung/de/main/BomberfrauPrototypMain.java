@@ -9,12 +9,13 @@
 
 package uni.bombenstimmung.de.main;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 import uni.bombenstimmung.de.graphics.GraphicsHandler;
 import uni.bombenstimmung.de.handler.MouseActionAreaHandler;
-import uni.bombenstimmung.de.serverconnection.ClientConnection;
-import uni.bombenstimmung.de.serverconnection.ServerConnection;
+import uni.bombenstimmung.de.serverconnection.client.MinaClient;
+import uni.bombenstimmung.de.serverconnection.server.MinaServer;
 
 public class BomberfrauPrototypMain {
 	
@@ -42,10 +43,20 @@ public class BomberfrauPrototypMain {
 		userInputScanner.close();
 		if(userInput.equals("s")) {
 			//Server
-			ServerConnection.openServerConnection();
+			try {
+				MinaServer.initServerConnection();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}else if(userInput.equals("c")) {
 			//Client
-			ClientConnection.connectToServer();
+			try {
+				MinaClient.initClientConnection();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}else {
 			ConsoleDebugger.printMessage("Invalid answer! Please restart...");
 		}
