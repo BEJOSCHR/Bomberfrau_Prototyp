@@ -1,3 +1,12 @@
+/*
+ * ClientHandler
+ *
+ * Version 1.0
+ * Author: Benni
+ *
+ * Arbeitet alle Client bezogenen Evente und Methoden ab
+ */
+
 package uni.bombenstimmung.de.serverconnection.client;
 
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -5,6 +14,7 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 
 import uni.bombenstimmung.de.main.ConsoleDebugger;
+import uni.bombenstimmung.de.serverconnection.ConnectionData;
 
 public class ClientHandler extends IoHandlerAdapter {
 
@@ -16,38 +26,34 @@ public class ClientHandler extends IoHandlerAdapter {
 	}
 	
 	@Override
-	public void sessionOpened(IoSession session) throws Exception {
-		
-		ConsoleDebugger.printMessage("Server connected! '"+session.getRemoteAddress()+"'");
-		
-	}
+	public void sessionOpened(IoSession session) throws Exception {}
 	
 	@Override
-	public void sessionClosed(IoSession session) throws Exception {
+	public void sessionClosed(IoSession session) {
 		
-		ConsoleDebugger.printMessage("Server closed! '"+session.getRemoteAddress()+"'");
+		ConsoleDebugger.printMessage("Connection to the server was closed unplanned!");
 		
 	}
 	
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		
-		ConsoleDebugger.printMessage("Received '"+message+"'");
+		String messageRaw = message.toString();
+		String[] splitMessage = messageRaw.split(ConnectionData.SPLIT_CHAR);
+		try {
+			int messageID = Integer.parseInt(splitMessage[0]);
+			String finalMessage = splitMessage[1];
+			MinaClient.receiveMessageFromServer(messageID, finalMessage);
+		}catch(NumberFormatException error) {
+			ConsoleDebugger.printMessage("Invalid message syntax! MessageId is not an Integer! (RawMessage: "+messageRaw+")");
+		}
 	    
 	}
 	
 	@Override
-	public void messageSent(IoSession session, Object message) throws Exception {
-		
-		ConsoleDebugger.printMessage("Send '"+message+"'");
-		
-	}
+	public void messageSent(IoSession session, Object message) throws Exception {}
 	
 	@Override
-	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
-		
-		 ConsoleDebugger.printMessage("IDLE "+session.getIdleCount(status));
-	    
-	}
+	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {}
 
 }

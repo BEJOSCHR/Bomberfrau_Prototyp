@@ -1,4 +1,4 @@
-/**
+/*
  * DrawParts
  *
  * Version 1.0
