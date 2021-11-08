@@ -12,6 +12,7 @@ package uni.bombenstimmung.de.serverconnection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.session.IoSession;
 
 import uni.bombenstimmung.de.objects.Player;
@@ -27,6 +28,7 @@ public class ConnectionData {
 	public static ConnectionType connectionType = ConnectionType.CLIENT;
 	
 	//SERVER
+	public static IoAcceptor serverAcceptor = null;
 	public static int lastPlayerID = 0;
 	public static List<Player> connectedPlayer = new ArrayList<Player>();
 	

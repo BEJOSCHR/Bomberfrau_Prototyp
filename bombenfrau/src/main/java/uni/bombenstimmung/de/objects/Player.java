@@ -9,6 +9,8 @@
 
 package uni.bombenstimmung.de.objects;
 
+import java.awt.Color;
+
 import org.apache.mina.core.session.IoSession;
 
 import uni.bombenstimmung.de.main.ConsoleDebugger;
@@ -17,8 +19,11 @@ import uni.bombenstimmung.de.serverconnection.server.MinaServer;
 
 public class Player {
 
-	int id;
+	private int id;
 	private IoSession session;
+	
+	private int x = 0, y = 0;
+	private Color color = Color.PINK;
 	
 	/**
 	 * Das Spieler Objekt das für den Server den jeweilig verbundenen Spieler repräsentiert.
@@ -72,11 +77,25 @@ public class Player {
 		
 	}
 	
+	public void setColor(Color newColor) {
+		this.color = newColor;
+	}
+	
 	public int getId() {
 		return id;
 	}
 	public IoSession getSession() {
 		return session;
+	}
+	
+	public int getX() {
+		return x;
+	}
+	public int getY() {
+		return y;
+	}
+	public Color getColor() {
+		return color;
 	}
 	
 }

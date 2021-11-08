@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
-import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
@@ -22,6 +21,7 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import uni.bombenstimmung.de.main.ConsoleDebugger;
 import uni.bombenstimmung.de.objects.Player;
 import uni.bombenstimmung.de.serverconnection.ConnectionData;
+import uni.bombenstimmung.de.serverconnection.ConnectionType;
 
 public class MinaServer {
 
@@ -32,15 +32,32 @@ public class MinaServer {
 	 */
 	public static void initServerConnection() throws IOException {
 		
-		IoAcceptor acceptor = new NioSocketAcceptor(); 
-//		acceptor.getFilterChain().addLast("logger", new LoggingFilter());
-		acceptor.getFilterChain().addLast("codec",  new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));  
-		acceptor.setHandler(new ServerHandler());
-//		acceptor.getSessionConfig().setReadBufferSize(2048);
-//	    acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 10);
-		acceptor.bind(new InetSocketAddress(ConnectionData.TCP_PORT));
+		ConnectionData.connectionType = ConnectionType.SERVER;
+		
+		ConnectionData.serverAcceptor = new NioSocketAcceptor(); 
+//		ConnectionData.serverAcceptor.getFilterChain().addLast("logger", new LoggingFilter());
+		ConnectionData.serverAcceptor.getFilterChain().addLast("codec",  new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));  
+		ConnectionData.serverAcceptor.setHandler(new ServerHandler());
+//		ConnectionData.serverAcceptor.getSessionConfig().setReadBufferSize(2048);
+//	    ConnectionData.serverAcceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 10);
+		ConnectionData.serverAcceptor.bind(new InetSocketAddress(ConnectionData.TCP_PORT));
 		
 		ConsoleDebugger.printMessage("Started server connection on port '"+ConnectionData.TCP_PORT+"'");
+		
+	}
+	
+	/**
+	 * Schließt die Serververbindung und trennt alle verbundenen Clients
+	 */
+	public static void shutDownServerConnection() {
+		
+		for(Player player : ConnectionData.connectedPlayer) {
+			player.forceDisconnect();
+		}
+		
+		ConnectionData.serverAcceptor.unbind();
+		ConnectionData.serverAcceptor.dispose();
+		ConnectionData.serverAcceptor = null;
 		
 	}
 	
@@ -77,6 +94,12 @@ public class MinaServer {
 		
 	}
 	
+	/**
+	 * Wird aufgerufen wenn ein Client sich connected. 
+	 * Sorgt dafür das ein {@link Player} Objekt für diese session angelegt wird
+	 * Informiert gleichzeitig die session über die ihr zugewiesene clientID
+	 * @param session - {@link IoSession} - Die session die sich verbunden hat
+	 */
 	public static void clientConnected(IoSession session) {
 		
 		Player player = new Player(session);
@@ -84,12 +107,22 @@ public class MinaServer {
 		
 	}
 	
+	/**
+	 * Wird aufgerufen wenn ein Client sich disconnected. 
+	 * leitet diese info an das übergebene player obejkt weiter
+	 * @param player - {@link Player} - Der Player der disconnectet
+	 */
 	public static void clientDisconnected(Player player) {
 		
 		player.disconnected();
 		
 	}
 	
+	/**
+	 * Gibt einen gesuchten Spieler zurück
+	 * @param session - {@link IoSession} - Die session die der gesuchte Player haben soll
+	 * @return {@link Player} wenn einer mit der gegebenen Session gefunden wurde, sonst null
+	 */
 	public static Player getPlayer(IoSession session) {
 		for(Player player : ConnectionData.connectedPlayer) {
 			if(player.getSession() == session) {
@@ -98,6 +131,11 @@ public class MinaServer {
 		}
 		return null;
 	}
+	/**
+	 * Gibt einen gesuchten Spieler zurück
+	 * @param id - int - Die ID die der gesuchte Player haben soll
+	 * @return {@link Player} wenn einer mit der gegebenen ID gefunden wurde, sonst null
+	 */
 	public static Player getPlayer(int id) {
 		for(Player player : ConnectionData.connectedPlayer) {
 			if(player.getId() == id) {

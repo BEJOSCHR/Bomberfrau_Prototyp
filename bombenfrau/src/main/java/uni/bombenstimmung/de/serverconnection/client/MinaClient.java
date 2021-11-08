@@ -21,6 +21,7 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
 import uni.bombenstimmung.de.main.ConsoleDebugger;
 import uni.bombenstimmung.de.serverconnection.ConnectionData;
+import uni.bombenstimmung.de.serverconnection.ConnectionType;
 
 public class MinaClient {
 
@@ -31,6 +32,8 @@ public class MinaClient {
 	 * @throws InterruptedException
 	 */
 	public static void initClientConnection() throws IOException, InterruptedException {
+		
+		ConnectionData.connectionType = ConnectionType.CLIENT;
 		
 		NioSocketConnector connector = new NioSocketConnector();
 		connector.setConnectTimeoutMillis(ConnectionData.TIMEOUT_DELAY);
@@ -112,8 +115,10 @@ public class MinaClient {
 	 */
 	public static void disconnectFromServer() {
 		
-		sendMessageToServer(999, "Disconnecting!");
-		ConnectionData.connectionToServer.closeNow();
+		if(ConnectionData.connectionToServer != null) {
+			sendMessageToServer(999, "Disconnecting!");
+			ConnectionData.connectionToServer.closeNow();
+		}
 		
 	}
 	

@@ -15,7 +15,11 @@ import java.awt.Graphics;
 
 import javax.swing.JFrame;
 
+import uni.bombenstimmung.de.game.GameData;
+import uni.bombenstimmung.de.handler.KeyHandler;
 import uni.bombenstimmung.de.handler.MouseHandler;
+import uni.bombenstimmung.de.handler.WindowHandler;
+import uni.bombenstimmung.de.main.ConsoleDebugger;
 
 public class GraphicsHandler {
 	
@@ -35,6 +39,77 @@ public class GraphicsHandler {
 		int width = g.getFontMetrics().stringWidth(text);
 		int height = g.getFontMetrics().getHeight()*2/3;
 		g.drawString(text, x-width/2, y+height/2);
+		
+	}
+	
+	/**
+	 * Bewegt das Bild so das die angegebene Koordinate im Mittelpunkt ist
+	 * @param X - int - X-Koordinate des neuen Mittefeldes
+	 * @param Y - int - Y-Koordinate des neuen Mittefeldes
+	 */
+	public static void moveScreenToFieldCoordinates(int fieldX, int fieldY) {
+		
+		if(GameData.runningGame == null) {
+			ConsoleDebugger.printMessage("Cant move Screen: No running game!");
+			return;
+		}
+		
+		int mitteVerschiebungX = ( (GraphicsData.width/GameData.FIELD_DIMENSION)/2)*GameData.FIELD_DIMENSION; //ZAHL AN FELDERN AUF DEM SCREEN UND DAVON DIE HÄLFTE UND DAS DANN MAL FIELDSIZE
+		int mitteVerschiebungY = ( (GraphicsData.height/GameData.FIELD_DIMENSION)/2)*GameData.FIELD_DIMENSION; //ZAHL AN FELDERN AUF DEM SCREEN UND DAVON DIE HÄLFTEUND DAS DANN MAL FIELDSIZE
+		int newLR_count = -(fieldX*GameData.FIELD_DIMENSION) + mitteVerschiebungX;
+		int newUD_count = -( (fieldY+1)*GameData.FIELD_DIMENSION) + mitteVerschiebungY;
+		GameData.runningGame.setMoveX(newLR_count);
+		GameData.runningGame.setMoveY(newUD_count);
+		
+	}
+	
+	/**
+	 * Berechnet die Pixel-Koordinate einer Field-Koordinate relativ dazu wie gerade das Bild "verschoben ist".
+	 * Ein Pixel-Ergebnis kann auch außerhalb der eigentlichen Screen Größe liegen, sollte dann aber nicht dargestellt werden
+	 * @param coordinate - int - Die Field-Koordindate
+	 * @param isItX - boolean - Gibt an ob wir den X oder Y Pixelwert zu der gegebenen Koordinate berechnen wollen
+	 * @return Den berechneten Wert oder -1 wenn kein Game läuft
+	 */
+	public static int getPixlesByCoordinate(int coordinate, boolean isItX) {
+		
+		if(GameData.runningGame == null) {
+			ConsoleDebugger.printMessage("Cant calculate Pixelcoordinate: No running game!");
+			return -1;
+		}
+		
+		//NORMAL GAME
+		if(isItX == true) {
+			//X
+			return (coordinate*GameData.FIELD_DIMENSION)+GameData.runningGame.getMoveX();
+		}else {
+			//Y
+			return (coordinate*GameData.FIELD_DIMENSION)+GameData.runningGame.getMoveY();
+		}
+		
+	}
+	
+	/**
+	 * Berechnet die Field-Koordinate einer Pixel-Koordinate relativ dazu wie gerade das Bild "verschoben ist".
+	 * Ein Field-Ergebnis kann auch außerhalb der eigentlichen Screen Größe liegen, sollte dann aber nicht dargestellt werden
+	 * @param pixel - int - Die Field-Koordindate
+	 * @param isItX - boolean - Gibt an ob wir den X oder Y Pixelwert zu der gegebenen Koordinate berechnen wollen
+	 * @return Den berechneten Wert oder -1 wenn kein Game läuft
+	 */
+	public static int getCoordianteByPixel(int pixel, boolean isItX) {
+		
+		if(GameData.runningGame == null) {
+			ConsoleDebugger.printMessage("Cant calculate field coordinate: No running game!");
+			return -1;
+		}
+		
+		//NORMAL GAME
+		if(isItX == true) {
+			//X
+			return (pixel-GameData.runningGame.getMoveX())/GameData.FIELD_DIMENSION;
+		}else {
+			//Y
+			return (pixel-GameData.runningGame.getMoveY())/GameData.FIELD_DIMENSION;
+		}
 		
 	}
 	
@@ -66,11 +141,11 @@ public class GraphicsHandler {
 		tempFrame.setUndecorated(true); 
 		tempFrame.setVisible(true);
 		
-//		tempFrame.addKeyListener(new InputHandler());
+		tempFrame.addKeyListener(new KeyHandler());
 		tempFrame.addMouseListener(new MouseHandler());
 		tempFrame.addMouseMotionListener(new MouseHandler());
 		tempFrame.addMouseWheelListener(new MouseHandler());
-//		tempFrame.addWindowListener(new InputHandler());
+		tempFrame.addWindowListener(new WindowHandler());
 		
 //		try { //TRY TO SET ICON
 //			tempFrame.setIconImage(ImageIO.read(Bomberfrau_Main.class.getResourceAsStream("images/Icon.png")));

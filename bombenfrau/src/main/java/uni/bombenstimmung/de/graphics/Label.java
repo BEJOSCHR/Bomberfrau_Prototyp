@@ -68,6 +68,7 @@ public class Label extends JLabel {
 		case AFTERGAME:
 			break;
 		case INGAME:
+			DrawParts.drawInGame(g);
 			break;
 		case LOBBY:
 			break;

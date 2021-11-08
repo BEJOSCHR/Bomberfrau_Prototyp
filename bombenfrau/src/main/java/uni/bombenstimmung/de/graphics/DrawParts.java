@@ -13,6 +13,7 @@ package uni.bombenstimmung.de.graphics;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import uni.bombenstimmung.de.game.GameData;
 import uni.bombenstimmung.de.main.BomberfrauPrototypMain;
 
 public class DrawParts {
@@ -36,6 +37,18 @@ public class DrawParts {
 		GraphicsHandler.drawCentralisedText(g, Color.WHITE, 12, BomberfrauPrototypMain.AUTHOR, GraphicsData.width/2, GraphicsData.height-30);
 		//VERSION NOTE
 		GraphicsHandler.drawCentralisedText(g, Color.WHITE, 12, BomberfrauPrototypMain.VERSION, GraphicsData.width/2, GraphicsData.height-15);
+		
+	}
+	
+	/**
+	 * Wird aufgerufen wenn der DrawState auf Game steht ({@link DisplayType}) und ist für die Darstellung des Games verantwortlich
+	 * @param g - Der Grafikparameter
+	 */
+	public static void drawInGame(Graphics g) {
+		
+		if(GameData.runningGame != null) {
+			GameData.runningGame.drawGame(g);
+		}
 		
 	}
 	
