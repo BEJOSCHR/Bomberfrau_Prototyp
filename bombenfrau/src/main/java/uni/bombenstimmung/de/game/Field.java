@@ -12,7 +12,6 @@ package uni.bombenstimmung.de.game;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import uni.bombenstimmung.de.graphics.GraphicsData;
 import uni.bombenstimmung.de.graphics.GraphicsHandler;
 
 public class Field {
@@ -44,14 +43,22 @@ public class Field {
 		int pixelY = GraphicsHandler.getPixlesByCoordinate(Y, false);
 		
 		g.setColor(FieldType.getColorForFieldType(type));
-		g.fillRect(pixelX, pixelY, GameData.FIELD_DIMENSION-1, GameData.FIELD_DIMENSION-1);
+		g.fillRect(pixelX, pixelY, GameData.FIELD_DIMENSION, GameData.FIELD_DIMENSION);
 		
-		//ZENTRAL FIELD?
-		int midX = GraphicsData.width/2, midY = GraphicsData.height/2;
-		if(GraphicsHandler.getCoordianteByPixel(midX, true) == this.X && GraphicsHandler.getCoordianteByPixel(midY, false) == this.Y) {
-			g.setColor(Color.BLACK);
-			g.drawRect(pixelX-1, pixelY-1, GameData.FIELD_DIMENSION, GameData.FIELD_DIMENSION);
-		}
+	}
+	
+	/**
+	 * Highlightet das field dar
+	 * @param g - Das Graphics-Objekt
+	 * @param color - Die Farbe des Highlights
+	 */
+	public void drawHighlight(Graphics g, Color color) {
+		
+		int pixelX = GraphicsHandler.getPixlesByCoordinate(X, true);
+		int pixelY = GraphicsHandler.getPixlesByCoordinate(Y, false);
+		
+		g.setColor(color);
+		g.drawRect(pixelX-1, pixelY-1, GameData.FIELD_DIMENSION, GameData.FIELD_DIMENSION);
 		
 	}
 	

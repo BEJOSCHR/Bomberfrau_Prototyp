@@ -18,6 +18,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
+import uni.bombenstimmung.de.game.GameData;
 import uni.bombenstimmung.de.main.ConsoleDebugger;
 import uni.bombenstimmung.de.objects.Player;
 import uni.bombenstimmung.de.serverconnection.ConnectionData;
@@ -54,6 +55,7 @@ public class MinaServer {
 		for(Player player : ConnectionData.connectedPlayer) {
 			player.forceDisconnect();
 		}
+		ConnectionData.connectedPlayer.clear();
 		
 		ConnectionData.serverAcceptor.unbind();
 		ConnectionData.serverAcceptor.dispose();
@@ -70,6 +72,13 @@ public class MinaServer {
 	public static void receiveMessageFromClient(Player sender, int messageID, String message) {
 		
 		switch(messageID) {
+		case 400:
+			//UpdatePlayerPos (x:y)
+			String[] data = message.split(":");
+			int newMoveFactorX = Integer.parseInt(data[0]);
+			int newMoveFactorY = Integer.parseInt(data[1]);
+			GameData.runningGame.updatePlayerPos(sender.getId(), newMoveFactorX, newMoveFactorY);
+			break;
 		case 999:
 			//DISCONNECT
 			MinaServer.clientDisconnected(sender);
@@ -104,6 +113,7 @@ public class MinaServer {
 		
 		Player player = new Player(session);
 		player.sendMessage(001, ""+player.getId());
+		GameData.runningGame.registerPlayer(player);
 		
 	}
 	

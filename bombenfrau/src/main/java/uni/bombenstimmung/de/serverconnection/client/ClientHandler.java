@@ -21,7 +21,7 @@ public class ClientHandler extends IoHandlerAdapter {
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		
-	    cause.printStackTrace();
+//	    cause.printStackTrace();
 	    
 	}
 	
@@ -32,6 +32,7 @@ public class ClientHandler extends IoHandlerAdapter {
 	public void sessionClosed(IoSession session) {
 		
 		ConsoleDebugger.printMessage("Connection to the server was closed unplanned!");
+		System.exit(0);
 		
 	}
 	

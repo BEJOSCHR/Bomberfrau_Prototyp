@@ -9,13 +9,8 @@
 
 package uni.bombenstimmung.de.main;
 
-import java.io.IOException;
-import java.util.Scanner;
-
 import uni.bombenstimmung.de.graphics.GraphicsHandler;
 import uni.bombenstimmung.de.handler.MouseActionAreaHandler;
-import uni.bombenstimmung.de.serverconnection.client.MinaClient;
-import uni.bombenstimmung.de.serverconnection.server.MinaServer;
 
 public class BomberfrauPrototypMain {
 	
@@ -35,31 +30,6 @@ public class BomberfrauPrototypMain {
 		
 		//MAA INIT
 		MouseActionAreaHandler.initMAAs();
-		
-		//USAGE: 2 Mal das Programm starten und dann ersten mit s und zweiten mit c starten... dann connected client zum server
-		ConsoleDebugger.printMessage("Server or Client? (s|c)");
-		Scanner userInputScanner = new Scanner(System.in);
-		String userInput = userInputScanner.nextLine();
-		userInputScanner.close();
-		if(userInput.equals("s")) {
-			//Server
-			try {
-				MinaServer.initServerConnection();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}else if(userInput.equals("c")) {
-			//Client
-			try {
-				MinaClient.initClientConnection();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}else {
-			ConsoleDebugger.printMessage("Invalid answer! Please restart...");
-		}
 		
 	}
 	

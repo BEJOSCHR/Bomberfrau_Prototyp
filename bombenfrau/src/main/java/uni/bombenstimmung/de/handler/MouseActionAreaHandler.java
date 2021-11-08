@@ -9,6 +9,7 @@
 
 package uni.bombenstimmung.de.handler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +20,8 @@ import uni.bombenstimmung.de.game.GameData;
 import uni.bombenstimmung.de.graphics.DisplayType;
 import uni.bombenstimmung.de.graphics.GraphicsData;
 import uni.bombenstimmung.de.objects.MouseActionArea;
+import uni.bombenstimmung.de.serverconnection.client.MinaClient;
+import uni.bombenstimmung.de.serverconnection.server.MinaServer;
 
 public class MouseActionAreaHandler {
 
@@ -55,6 +58,9 @@ public class MouseActionAreaHandler {
 			
 			@Override
 			public void performAction_LEFT_RELEASE() {
+				try {
+					MinaClient.initClientConnection();
+				} catch (IOException | InterruptedException e) {}
 				GameData.runningGame = new Game(false);
 				GraphicsData.drawState = DisplayType.INGAME;
 			}
@@ -70,6 +76,9 @@ public class MouseActionAreaHandler {
 			
 			@Override
 			public void performAction_LEFT_RELEASE() {
+				try {
+					MinaServer.initServerConnection();
+				} catch (IOException e) {}
 				GameData.runningGame = new Game(true);
 				GraphicsData.drawState = DisplayType.INGAME;
 			}

@@ -18,25 +18,25 @@ import java.util.TimerTask;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import uni.bombenstimmung.de.graphics.GraphicsData;
 import uni.bombenstimmung.de.graphics.GraphicsHandler;
 import uni.bombenstimmung.de.handler.MovementHandler;
 import uni.bombenstimmung.de.main.ConsoleDebugger;
 import uni.bombenstimmung.de.objects.Player;
+import uni.bombenstimmung.de.serverconnection.ConnectionData;
+import uni.bombenstimmung.de.serverconnection.ConnectionType;
 
 public class Game {
 
 	//Local Client Data
 	private Color color = Color.RED;
-	private int x = 0, y = 0;
-	private int moveX = 0, moveY = 0;
+	private int moveX = (GameData.MAP_DIMENSION/2)*GameData.FIELD_DIMENSION, moveY = moveX;
 	
 	//Other Client Data
 	private List<Player> players = new ArrayList<Player>();
 	
 	//General Data
 	private boolean gameHasStarted = false;
-	private boolean movementAllowed = false;
+	private boolean movementAllowed = true;
 	private int timeRemaining = GameData.COUNTDOWN_DURATION;
 	private boolean thisClientIsHost = false;
 	private Field map[][] = new Field[GameData.MAP_DIMENSION][GameData.MAP_DIMENSION];
@@ -81,10 +81,6 @@ public class Game {
 			}
 		}
 		
-		//MOVE SCREEN
-		int midField = (GameData.MAP_DIMENSION)/2;
-		GraphicsHandler.moveScreenToFieldCoordinates(midField, midField);
-		
 		//START MOVEMENT HANDLER
 		MovementHandler.startMovementTimer();
 		
@@ -103,14 +99,19 @@ public class Game {
 		
 		this.gameHasStarted = true;
 		
-		//TODO TP PLAYER
+		//TODO TP PLAYER vie updatePlayerPos
 		
-		//TODO SEND COUNTDOWN START TO OTHERS
+		//TODO SEND MAP
+		
+		//SEND COUNTDOWN START TO OTHERS
+		for(Player player : this.players) {
+			player.sendMessage(300, "Countdown Start");
+		}
 		startCountdown();
 		
 	}
 	/**
-	 * Wird vom Spielstart aufgerufen und gibt nach einiger Zeit die Bewegung frei
+	 * Wird vom Spielstart/ConnectionClient aufgerufen und gibt nach einiger Zeit die Bewegung frei
 	 */
 	public void startCountdown() { 
 		
@@ -130,11 +131,40 @@ public class Game {
 		
 	}
 	
+	/**
+	 * Updatet die Spielerposition
+	 * @param playerID - int - Die ID von dem sich bewegenden Spieler
+	 * @param newMoveFactorX - int - Der neue X-Movefaktor
+	 * @param newMoveFactorY - int - Der neue Y-Movefaktor
+	 */
+	public void updatePlayerPos(int playerID, int newMoveFactorX, int newMoveFactorY) {
+		
+		boolean updatedPlayer = false;
+		
+		for(Player player : this.players) {
+			
+			if(player.getId() == playerID) {
+				player.setX(newMoveFactorX);
+				player.setY(newMoveFactorY);
+				updatedPlayer = true;
+			}
+			if(ConnectionData.connectionType == ConnectionType.SERVER) {
+				player.sendMessage(400, playerID+":"+newMoveFactorX+":"+newMoveFactorY);
+			}
+		}
+		
+		if(updatedPlayer == false) {
+			//NO ONE UPDATE SO THIS CLIENT
+			this.moveX = newMoveFactorX;
+			this.moveY = newMoveFactorY;
+		}
+		
+	}
 	
 	/**
 	 * Wird nur aufgerufen vom Server wenn sich jemand neues einloggt in das game. 
 	 * Hier wird demjenigen dann der derzeitige Spielstand übermittelt und ihm eine farbe zugewiesen.
-	 * Es können maximal 3 Spieler regestriert werden! (3 + Lokalen SPieler = 4 Player)
+	 * Es können maximal 3 Spieler regestriert werden! (3 + Lokalen Spieler = 4 Player)
 	 * @param newPlayer - Der Neue Spieler
 	 */
 	public void registerPlayer(Player newPlayer) {
@@ -147,13 +177,16 @@ public class Game {
 		newPlayer.setColor(getNextFreeColor());
 		
 		//SEND DATA TO NEW PLAYER
-		//TODO SEND LOKAL PLAYER
+		newPlayer.sendMessage(100, newPlayer.getColor().getRed()+","+newPlayer.getColor().getGreen()+","+newPlayer.getColor().getBlue());
+		//SEND ALREADY REGISTERED PLAYER
 		for(Player player : this.players) {
-			//TODO
+			newPlayer.sendMessage(200, player.convertToStringData());
 		}
-		//SEND DATA TO OTHER PLAYERS ABOUT NEW PLAYER
+		//SEND LOKAL PLAYER
+		newPlayer.sendMessage(200, 0+":"+this.color.getRed()+","+this.color.getGreen()+","+this.color.getBlue()+":"+this.moveX+":"+this.moveY);
+		//SEND DATA TO OTHER PLAYER ABOUT NEW PLAYER
 		for(Player player : this.players) {
-			//TODO
+			player.sendMessage(200, newPlayer.convertToStringData());
 		}
 		
 		this.players.add(newPlayer);
@@ -182,7 +215,7 @@ public class Game {
 				this.players.remove(player);
 				//SEND LEAVE TO ALL OTHER PLAYER
 				for(Player otherPlayer : this.players) {
-					//TODO
+					otherPlayer.sendMessage(201, player.getId()+"");
 				}
 				return;
 			}
@@ -221,10 +254,46 @@ public class Game {
 			}
 		}
 		
-		//PLAYER
-		int midX = GraphicsData.width/2, midY = GraphicsData.height/2;
-		g.setColor(Color.BLACK);
-		g.fillOval(midX-(GameData.PLAYER_DIMENSION/2), midY-(GameData.PLAYER_DIMENSION/2), GameData.PLAYER_DIMENSION, GameData.PLAYER_DIMENSION);		
+		//OTHER PLAYER
+		for(Player player : this.players) {
+			player.draw(g);
+		}
+		
+		//LOKAL PLAYER
+		int playerX = GraphicsHandler.getPlayerCoordianteByMoveFactor(moveX, true);
+		int playerY = GraphicsHandler.getPlayerCoordianteByMoveFactor(moveY, false);
+		g.setColor(this.color);
+		g.fillOval(playerX-GameData.FIELD_DIMENSION/2, playerY-GameData.FIELD_DIMENSION/2, GameData.PLAYER_DIMENSION, GameData.PLAYER_DIMENSION);		
+		try {
+			this.map[GraphicsHandler.getCoordianteByPixel(playerX, true)][GraphicsHandler.getCoordianteByPixel(playerY, false)].drawHighlight(g, this.color);
+		}catch(IndexOutOfBoundsException error) {}
+		
+	}
+	
+	/**
+	 * Updatet die Felder der Map abhängig von der übertragenen MapData
+	 * @param mapData - String - Enthält die Daten über die felder der Map
+	 */
+	public void updateMap(String mapData) {
+		
+		//SYNTAX: 1,1,BL:1,2,BL: ...
+		
+		//RESETT MAP
+		for(int x = 0 ; x < GameData.MAP_DIMENSION ; x++) {
+			for(int y = 0 ; y < GameData.MAP_DIMENSION ; y++) {
+				this.map[x][y].changeType(FieldType.DEFAULT);
+			}
+		}
+		
+		//CHANGE NOT DEFAULT FIELDS
+		String[] fieldData = mapData.split(":");
+		for(String field : fieldData) {
+			String[] data = field.split(",");
+			int x = Integer.parseInt(data[0]);
+			int y = Integer.parseInt(data[1]);
+			FieldType type = FieldType.getFieldTypeFromRepresentation(data[2]);
+			this.map[x][y].changeType(type);
+		}
 		
 	}
 	
@@ -246,11 +315,8 @@ public class Game {
 		
 	}
 	
-	public int getX() {
-		return x;
-	}
-	public int getY() {
-		return y;
+	public void setColor(Color color) {
+		this.color = color;
 	}
 	public Color getColor() {
 		return color;
@@ -268,12 +334,12 @@ public class Game {
 	public void setMoveY(int moveY) {
 		this.moveY = moveY;
 	}
-	public void addMoveX(int moveX) {
-		this.moveX += moveX;
-	}
-	public void addMoveY(int moveY) {
-		this.moveY += moveY;
-	}
+//	public void addMoveX(int moveX) {
+//		this.moveX += moveX;
+//	}
+//	public void addMoveY(int moveY) {
+//		this.moveY += moveY;
+//	}
 	
 	public Field[][] getMap() {
 		return map;

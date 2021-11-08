@@ -13,18 +13,24 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
+import java.awt.Color;
+
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
+import uni.bombenstimmung.de.game.GameData;
 import uni.bombenstimmung.de.main.ConsoleDebugger;
+import uni.bombenstimmung.de.objects.Player;
 import uni.bombenstimmung.de.serverconnection.ConnectionData;
 import uni.bombenstimmung.de.serverconnection.ConnectionType;
 
 public class MinaClient {
 
+	private static NioSocketConnector connector = null;
+	
 	/**
 	 * Versucht eine Verbindung zum Server aufzubauen, versucht dies einige Male
 	 * Es ist wichtig den selben codec Filter zu setzten wie im Server (Charset UTF-8)!
@@ -35,7 +41,7 @@ public class MinaClient {
 		
 		ConnectionData.connectionType = ConnectionType.CLIENT;
 		
-		NioSocketConnector connector = new NioSocketConnector();
+		connector = new NioSocketConnector();
 		connector.setConnectTimeoutMillis(ConnectionData.TIMEOUT_DELAY);
 		connector.setHandler(new ClientHandler());
 //		connector.getFilterChain().addLast("logger", new LoggingFilter());
@@ -62,10 +68,6 @@ public class MinaClient {
 		    }
 		    tryCount++;
 		}
-		    
-		// wait until the summation is done
-		ConnectionData.connectionToServer.getCloseFuture().awaitUninterruptibly();
-		connector.dispose();
 		
 	}
 	
@@ -86,6 +88,45 @@ public class MinaClient {
 				ConsoleDebugger.printMessage("Invalid clientID! Cant convert to Integer: "+message+"");
 			}
 			break;
+		case 100:
+			//Farbe (farbe)
+			Color color = getColorFromString(message);
+			ConsoleDebugger.printMessage("Received color: "+message);
+			GameData.runningGame.setColor(color);
+			break;
+		case 101:
+			//Map
+			String mapData = message;
+			GameData.runningGame.updateMap(mapData);
+			break;
+		case 200:
+			//New player (id:color:x:y)
+			String[] data = message.split(":");
+			int id = Integer.parseInt(data[0]);
+			Color newColor = getColorFromString(data[1]);
+			int moveFactorX = Integer.parseInt(data[2]);
+			int moveFactorY = Integer.parseInt(data[3]);
+			Player newPlayer = new Player(id, newColor);
+			newPlayer.setX(moveFactorX);
+			newPlayer.setY(moveFactorY);
+			GameData.runningGame.addPlayer(newPlayer);
+			break;
+		case 201:
+			//Remove player (id)
+			int id2 = Integer.parseInt(message);
+			GameData.runningGame.removePlayer(id2);
+			break;
+		case 300:
+			//Start Spiel Countdown
+			GameData.runningGame.startCountdown();
+			break;
+		case 400:
+			String[] data1 = message.split(":");
+			int playerID = Integer.parseInt(data1[0]);
+			int newMoveFactorX = Integer.parseInt(data1[1]);
+			int newMoveFactorY = Integer.parseInt(data1[2]);
+			GameData.runningGame.updatePlayerPos(playerID, newMoveFactorX, newMoveFactorY);
+			break;
 		case 999:
 			//FORCED DISCONECT
 			ConnectionData.connectionToServer.closeNow();
@@ -95,6 +136,17 @@ public class MinaClient {
 			ConsoleDebugger.printMessage("Unknown messageID '"+messageID+"'!");
 			break;
 		}
+		
+	}
+	
+	private static Color getColorFromString(String colorString) {
+		
+		//RGB
+		String[] data = colorString.split(",");
+		int r = Integer.parseInt(data[0]);
+		int g = Integer.parseInt(data[1]);
+		int b = Integer.parseInt(data[2]);
+		return new Color(r, g, b);
 		
 	}
 	
@@ -118,6 +170,7 @@ public class MinaClient {
 		if(ConnectionData.connectionToServer != null) {
 			sendMessageToServer(999, "Disconnecting!");
 			ConnectionData.connectionToServer.closeNow();
+			connector.dispose();
 		}
 		
 	}

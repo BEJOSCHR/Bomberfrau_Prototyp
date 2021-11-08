@@ -43,27 +43,6 @@ public class GraphicsHandler {
 	}
 	
 	/**
-	 * Bewegt das Bild so das die angegebene Koordinate im Mittelpunkt ist
-	 * @param X - int - X-Koordinate des neuen Mittefeldes
-	 * @param Y - int - Y-Koordinate des neuen Mittefeldes
-	 */
-	public static void moveScreenToFieldCoordinates(int fieldX, int fieldY) {
-		
-		if(GameData.runningGame == null) {
-			ConsoleDebugger.printMessage("Cant move Screen: No running game!");
-			return;
-		}
-		
-		int mitteVerschiebungX = ( (GraphicsData.width/GameData.FIELD_DIMENSION)/2)*GameData.FIELD_DIMENSION; //ZAHL AN FELDERN AUF DEM SCREEN UND DAVON DIE HÄLFTE UND DAS DANN MAL FIELDSIZE
-		int mitteVerschiebungY = ( (GraphicsData.height/GameData.FIELD_DIMENSION)/2)*GameData.FIELD_DIMENSION; //ZAHL AN FELDERN AUF DEM SCREEN UND DAVON DIE HÄLFTEUND DAS DANN MAL FIELDSIZE
-		int newLR_count = -(fieldX*GameData.FIELD_DIMENSION) + mitteVerschiebungX;
-		int newUD_count = -( (fieldY+1)*GameData.FIELD_DIMENSION) + mitteVerschiebungY;
-		GameData.runningGame.setMoveX(newLR_count);
-		GameData.runningGame.setMoveY(newUD_count);
-		
-	}
-	
-	/**
 	 * Berechnet die Pixel-Koordinate einer Field-Koordinate relativ dazu wie gerade das Bild "verschoben ist".
 	 * Ein Pixel-Ergebnis kann auch außerhalb der eigentlichen Screen Größe liegen, sollte dann aber nicht dargestellt werden
 	 * @param coordinate - int - Die Field-Koordindate
@@ -78,12 +57,13 @@ public class GraphicsHandler {
 		}
 		
 		//NORMAL GAME
+		int totalMapDimension = GameData.FIELD_DIMENSION*GameData.MAP_DIMENSION;
 		if(isItX == true) {
 			//X
-			return (coordinate*GameData.FIELD_DIMENSION)+GameData.runningGame.getMoveX();
+			return GraphicsData.width/2-totalMapDimension/2+(coordinate*GameData.FIELD_DIMENSION);
 		}else {
 			//Y
-			return (coordinate*GameData.FIELD_DIMENSION)+GameData.runningGame.getMoveY();
+			return GraphicsData.height/2-totalMapDimension/2+(coordinate*GameData.FIELD_DIMENSION);
 		}
 		
 	}
@@ -92,7 +72,7 @@ public class GraphicsHandler {
 	 * Berechnet die Field-Koordinate einer Pixel-Koordinate relativ dazu wie gerade das Bild "verschoben ist".
 	 * Ein Field-Ergebnis kann auch außerhalb der eigentlichen Screen Größe liegen, sollte dann aber nicht dargestellt werden
 	 * @param pixel - int - Die Field-Koordindate
-	 * @param isItX - boolean - Gibt an ob wir den X oder Y Pixelwert zu der gegebenen Koordinate berechnen wollen
+	 * @param isItX - boolean - Gibt an ob wir den X oder Y Wert berechnen wollen
 	 * @return Den berechneten Wert oder -1 wenn kein Game läuft
 	 */
 	public static int getCoordianteByPixel(int pixel, boolean isItX) {
@@ -103,12 +83,37 @@ public class GraphicsHandler {
 		}
 		
 		//NORMAL GAME
+		int totalMapDimension = GameData.FIELD_DIMENSION*GameData.MAP_DIMENSION;
 		if(isItX == true) {
 			//X
-			return (pixel-GameData.runningGame.getMoveX())/GameData.FIELD_DIMENSION;
+			return (pixel-GraphicsData.width/2+totalMapDimension/2)/GameData.FIELD_DIMENSION;
 		}else {
 			//Y
-			return (pixel-GameData.runningGame.getMoveY())/GameData.FIELD_DIMENSION;
+			return (pixel-GraphicsData.height/2+totalMapDimension/2)/GameData.FIELD_DIMENSION;
+		}
+		
+	}
+	
+	/**
+	 * Berechnet die Koordinaten des Spielers an denen dieser dargestellt wird abhängig von seinem Movefaktor
+	 * @param moveFactor - int - Der Faktor der die Verscheibung des Spielers relativ zur Oberen-Linken-Ecke angibt
+	 * @param isItX - boolean - Gibt an ob wir den X oder Y Wert berechnen wollen
+	 * @return - Den berechneten Wert oder -1 wenn kein Game läuft
+	 */
+	public static int getPlayerCoordianteByMoveFactor(int moveFactor, boolean isItX) {
+		
+		if(GameData.runningGame == null) {
+			ConsoleDebugger.printMessage("Cant calculate player coordinate: No running game!");
+			return -1;
+		}
+		
+		//NORMAL GAME
+		if(isItX == true) {
+			//X
+			return GraphicsHandler.getPixlesByCoordinate(0, true)+moveFactor;
+		}else {
+			//Y
+			return GraphicsHandler.getPixlesByCoordinate(0, false)+moveFactor;
 		}
 		
 	}
@@ -138,7 +143,7 @@ public class GraphicsHandler {
 		tempFrame.setTitle("BomberFrau - Prototyp");
 		tempFrame.setResizable(false);
 		tempFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		tempFrame.setUndecorated(true); 
+		tempFrame.setUndecorated(false); //TODO 
 		tempFrame.setVisible(true);
 		
 		tempFrame.addKeyListener(new KeyHandler());
@@ -161,6 +166,10 @@ public class GraphicsHandler {
 		
 		GraphicsData.width = tempFrame.getWidth();
 		GraphicsData.height = tempFrame.getHeight();
+		
+		GameData.FIELD_DIMENSION = (int) ((GraphicsData.height-GameData.MAP_SIDE_BORDER*2)/GameData.MAP_DIMENSION);
+		GameData.PLAYER_DIMENSION = (int) (GameData.FIELD_DIMENSION*0.75);
+		GameData.BOMB_DIMENSION = (int) (GameData.FIELD_DIMENSION*0.65);
 		
 		tempFrame.requestFocus();
 		

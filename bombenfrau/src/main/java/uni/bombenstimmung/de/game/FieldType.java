@@ -63,7 +63,7 @@ public enum FieldType {
 		case BLOCK:
 			return Color.DARK_GRAY;
 		case BORDER:
-			return Color.RED;
+			return Color.RED.darker();
 		case DEFAULT:
 			return Color.GREEN.darker();
 		case WALL:
