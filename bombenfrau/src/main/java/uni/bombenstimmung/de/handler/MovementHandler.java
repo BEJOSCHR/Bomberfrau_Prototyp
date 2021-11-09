@@ -14,10 +14,12 @@ import uni.bombenstimmung.de.serverconnection.client.MinaClient;
 
 public class MovementHandler {
 
-	public static final int PIXEL_MOVEMENT_PER_TICK = 2;
+	public static final int PIXEL_MOVEMENT_PER_TICK = 6;
 	
 	public static int movementValue = 0;
 	private static Timer movementTimer = null;
+	
+	public static boolean awaitingMoveUpdate = false;
 	
 	/**
 	 * Startet den Timer der für die Karten Bewegung verantwortlich ist.
@@ -38,14 +40,15 @@ public class MovementHandler {
 						return;
 					}
 					
-					if(GameData.runningGame.isMovementAllowed()) {
+					if(GameData.runningGame.isMovementAllowed() && awaitingMoveUpdate == false) {
 						switch(movementValue) {
 						case 1:
 							//UP
 							int newX = GameData.runningGame.getMoveX();
 							int newY = GameData.runningGame.getMoveY()-PIXEL_MOVEMENT_PER_TICK;
-							if(checkMoveFactorsForFreeField(newX, newY) == false) { return; }
+							if(checkAllDirections(newX, newY) == false) { return; }
 							if(ConnectionData.connectionType == ConnectionType.CLIENT) {
+								awaitingMoveUpdate = true;
 								MinaClient.sendMessageToServer(400, newX+":"+newY);
 							}else {
 								GameData.runningGame.updatePlayerPos(0, newX, newY);
@@ -55,8 +58,9 @@ public class MovementHandler {
 							//DOWN
 							int newX1 = GameData.runningGame.getMoveX();
 							int newY1 = GameData.runningGame.getMoveY()+PIXEL_MOVEMENT_PER_TICK;
-							if(checkMoveFactorsForFreeField(newX1, newY1) == false) { return; }
+							if(checkAllDirections(newX1, newY1) == false) { return; }
 							if(ConnectionData.connectionType == ConnectionType.CLIENT) {
+								awaitingMoveUpdate = true;
 								MinaClient.sendMessageToServer(400, newX1+":"+newY1);
 							}else {
 								GameData.runningGame.updatePlayerPos(0, newX1, newY1);
@@ -66,8 +70,9 @@ public class MovementHandler {
 							//LEFT
 							int newX2 = GameData.runningGame.getMoveX()-PIXEL_MOVEMENT_PER_TICK;
 							int newY2 = GameData.runningGame.getMoveY();
-							if(checkMoveFactorsForFreeField(newX2, newY2) == false) { return; }
+							if(checkAllDirections(newX2, newY2) == false) { return; }
 							if(ConnectionData.connectionType == ConnectionType.CLIENT) {
+								awaitingMoveUpdate = true;
 								MinaClient.sendMessageToServer(400, newX2+":"+newY2);
 							}else {
 								GameData.runningGame.updatePlayerPos(0, newX2, newY2);
@@ -77,8 +82,9 @@ public class MovementHandler {
 							//RIGHT
 							int newX3 = GameData.runningGame.getMoveX()+PIXEL_MOVEMENT_PER_TICK;
 							int newY3 = GameData.runningGame.getMoveY();
-							if(checkMoveFactorsForFreeField(newX3, newY3) == false) { return; }
+							if(checkAllDirections(newX3, newY3) == false) { return; }
 							if(ConnectionData.connectionType == ConnectionType.CLIENT) {
+								awaitingMoveUpdate = true;
 								MinaClient.sendMessageToServer(400, newX3+":"+newY3);
 							}else {
 								GameData.runningGame.updatePlayerPos(0, newX3, newY3);
@@ -88,9 +94,25 @@ public class MovementHandler {
 					}
 					
 				}
-			}, 0, 10);
+			}, 0, 40);
 			
 		}
+		
+	}
+	
+	/**
+	 * Checkt mit einem kleinen offset alle richtungen der eigentlichen moveFaktoren ob dort ein Hinderniss ist
+	 * @param moveX - int - Der X-Movefaktor
+	 * @param moveY - int - Der Y-Movefaktor
+	 * @return true wenn die Umgebung frei ist, also die moveFaktoren gültig/erlaubt sind, false wenn nicht
+	 */
+	private static boolean checkAllDirections(int moveX, int moveY) {
+		
+		if(checkMoveFactorsForFreeField(moveX+GameData.GAME_MOVE_CHECK_DISTANCE, moveY) == false) { return false; }
+		if(checkMoveFactorsForFreeField(moveX-GameData.GAME_MOVE_CHECK_DISTANCE, moveY) == false) { return false; }
+		if(checkMoveFactorsForFreeField(moveX, moveY+GameData.GAME_MOVE_CHECK_DISTANCE) == false) { return false; }
+		if(checkMoveFactorsForFreeField(moveX, moveY-GameData.GAME_MOVE_CHECK_DISTANCE) == false) { return false; }
+		return true;
 		
 	}
 	

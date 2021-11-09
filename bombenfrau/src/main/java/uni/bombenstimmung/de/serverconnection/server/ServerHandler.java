@@ -36,7 +36,7 @@ public class ServerHandler extends IoHandlerAdapter {
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
 		
-		ConsoleDebugger.printMessage("A client session was closed unplanned! Player object will be removed...");
+		ConsoleDebugger.printMessage("A client session was closed! Player object will be removed...");
 		Player player = MinaServer.getPlayer(session);
 		if(player != null) {
 			player.disconnected();

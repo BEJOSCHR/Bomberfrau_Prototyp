@@ -21,7 +21,10 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
+import uni.bombenstimmung.de.game.Game;
 import uni.bombenstimmung.de.game.GameData;
+import uni.bombenstimmung.de.graphics.DisplayType;
+import uni.bombenstimmung.de.graphics.GraphicsData;
 import uni.bombenstimmung.de.main.ConsoleDebugger;
 import uni.bombenstimmung.de.objects.Player;
 import uni.bombenstimmung.de.serverconnection.ConnectionData;
@@ -55,6 +58,7 @@ public class MinaClient {
 		        future.awaitUninterruptibly();
 		        ConnectionData.connectionToServer = future.getSession();
 		        ConsoleDebugger.printMessage("connected!");
+		        ConsoleDebugger.printMessage("If no clientID is received, the game is already running or full!");
 		        return true;
 		    } catch (RuntimeIoException e) {
 		    	ConsoleDebugger.printMessage("failed!");
@@ -84,6 +88,8 @@ public class MinaClient {
 			try {
 				ConnectionData.clientID = Integer.parseInt(message);
 				ConsoleDebugger.printMessage("Received clientID "+ConnectionData.clientID+"");
+				GameData.runningGame = new Game(false);
+				GraphicsData.drawState = DisplayType.INGAME;
 			}catch(NumberFormatException error) {
 				ConsoleDebugger.printMessage("Invalid clientID! Cant convert to Integer: "+message+"");
 			}
@@ -96,8 +102,9 @@ public class MinaClient {
 			break;
 		case 101:
 			//Map
-			String mapData = message;
-			GameData.runningGame.updateMap(mapData);
+			int mapNumber = Integer.parseInt(message);
+			ConsoleDebugger.printMessage("Received mapNumber: "+mapNumber);
+			GameData.runningGame.updateMap(mapNumber);
 			break;
 		case 200:
 			//New player (id:color:x:y)

@@ -61,11 +61,7 @@ public class MouseActionAreaHandler {
 			@Override
 			public void performAction_LEFT_RELEASE() {
 				try {
-					boolean result = MinaClient.initClientConnection();
-					if(result == true) {
-						GameData.runningGame = new Game(false);
-						GraphicsData.drawState = DisplayType.INGAME;
-					}
+					MinaClient.initClientConnection();
 				} catch (IOException | InterruptedException e) {}
 			}
 			
@@ -135,16 +131,17 @@ public class MouseActionAreaHandler {
 			public void performAction_LEFT_RELEASE() {
 				if(ConnectionData.connectionType == ConnectionType.CLIENT) {
 					MinaClient.disconnectFromServer();
-					GraphicsData.drawState = DisplayType.MENU;
 				}else {
 					MinaServer.shutDownServerConnection();
-					GraphicsData.drawState = DisplayType.MENU;
 				}
+				GraphicsData.drawState = DisplayType.MENU;
+				GameData.isRunning = false;
+				GameData.runningGame = null;
 			}
 			
 			@Override
 			public boolean isActiv() {
-				return GraphicsData.drawState == DisplayType.INGAME && GameData.runningGame.isThisClientHost() && GameData.runningGame.isGameStarted() == false  && GameData.runningGame.isMovementAllowed();
+				return GraphicsData.drawState == DisplayType.INGAME && GameData.runningGame.isGameStarted() == false  && GameData.runningGame.isMovementAllowed();
 			}
 			
 		};

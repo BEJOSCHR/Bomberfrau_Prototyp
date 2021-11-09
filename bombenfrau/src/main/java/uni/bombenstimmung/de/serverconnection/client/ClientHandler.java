@@ -13,6 +13,9 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 
+import uni.bombenstimmung.de.game.GameData;
+import uni.bombenstimmung.de.graphics.DisplayType;
+import uni.bombenstimmung.de.graphics.GraphicsData;
 import uni.bombenstimmung.de.main.ConsoleDebugger;
 import uni.bombenstimmung.de.serverconnection.ConnectionData;
 
@@ -31,8 +34,12 @@ public class ClientHandler extends IoHandlerAdapter {
 	@Override
 	public void sessionClosed(IoSession session) {
 		
-		ConsoleDebugger.printMessage("Connection to the server was closed unplanned!");
-		System.exit(0);
+		ConsoleDebugger.printMessage("Connection to the server was closed!");
+		if(GameData.runningGame != null) {
+			GraphicsData.drawState = DisplayType.MENU;
+			GameData.isRunning = false;
+			GameData.runningGame = null;
+		}
 		
 	}
 	

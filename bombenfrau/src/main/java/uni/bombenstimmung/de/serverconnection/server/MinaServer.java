@@ -113,6 +113,13 @@ public class MinaServer {
 	 */
 	public static void clientConnected(IoSession session) {
 		
+		if(GameData.runningGame != null) {
+			if(GameData.runningGame.isGameStarted() || GameData.runningGame.getPlayerCount() >= 4) {
+				session.closeNow();
+				return; //NO NEW PLAYER CAN JOIN
+			}
+		}
+		
 		Player player = new Player(session);
 		player.sendMessage(001, ""+player.getId());
 		GameData.runningGame.registerPlayer(player);

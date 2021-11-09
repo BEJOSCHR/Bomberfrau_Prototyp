@@ -10,6 +10,7 @@
 package uni.bombenstimmung.de.game;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
@@ -40,7 +41,7 @@ public class Game {
 	private boolean movementAllowed = true;
 	private int timeRemaining = GameData.COUNTDOWN_DURATION;
 	private boolean thisClientIsHost = false;
-	private String mapData = "";
+	private int mapNumber = 1;
 	private Field map[][] = new Field[GameData.MAP_DIMENSION][GameData.MAP_DIMENSION];
 	private List<Color> freeColors = new ArrayList<Color>();
 	
@@ -91,13 +92,23 @@ public class Game {
 		}
 		
 		//TODO TP PLAYER vie updatePlayerPos
+		updatePlayerPos(0, (int) (1*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0), (int) (1*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0));
+		if(this.players.size() >= 1) {
+			updatePlayerPos(this.players.get(0).getId(), (int) ((GameData.MAP_DIMENSION-2)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0), (int) ((GameData.MAP_DIMENSION-2)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0));
+		}
+		if(this.players.size() >= 2) {
+			updatePlayerPos(this.players.get(1).getId(), (int) (1*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0), (int) ((GameData.MAP_DIMENSION-2)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0));
+		}
+		if(this.players.size() >= 3) {
+			updatePlayerPos(this.players.get(2).getId(), (int) ((GameData.MAP_DIMENSION-2)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0), (int) (1*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0));
+		}
 		
 		//TODO SEND MAP
-		mapData = GameData.MAP_1; //TODO CHOOSE MAPE
+		mapNumber = 1; //TODO CHOOSE MAPE
 		for(Player player : this.players) {
-			player.sendMessage(101, mapData);
+			player.sendMessage(101, mapNumber+"");
 		}
-		updateMap(mapData);
+		updateMap(mapNumber);
 		
 		//SEND COUNTDOWN START TO OTHERS
 		for(Player player : this.players) {
@@ -152,6 +163,7 @@ public class Game {
 		
 		if(updatedPlayer == false) {
 			//NO ONE UPDATE SO THIS CLIENT
+			MovementHandler.awaitingMoveUpdate = false;
 			this.moveX = newMoveFactorX;
 			this.moveY = newMoveFactorY;
 		}
@@ -175,7 +187,6 @@ public class Game {
 		}
 		
 		newPlayer.setColor(getNextFreeColor());
-		newPlayer.sendMessage(101, mapData);
 		
 		//SEND DATA TO NEW PLAYER
 		newPlayer.sendMessage(100, newPlayer.getColor().getRed()+","+newPlayer.getColor().getGreen()+","+newPlayer.getColor().getBlue());
@@ -191,6 +202,10 @@ public class Game {
 		}
 		
 		this.players.add(newPlayer);
+		
+		//RANDOM SPAWN POINT
+		Random r = new Random();
+		this.updatePlayerPos(newPlayer.getId(), (int) ((r.nextInt(GameData.MAP_DIMENSION-2)+1)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0), (int) ((r.nextInt(GameData.MAP_DIMENSION-2)+1)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0));
 		
 	}
 	/**
@@ -256,9 +271,11 @@ public class Game {
 		}
 		
 		//OTHER PLAYER
-		for(Player player : this.players) {
-			player.draw(g);
-		}
+		try {
+			for(Player player : this.players) {
+				player.draw(g);
+			}
+		}catch(ConcurrentModificationException error) {}
 		
 		//LOKAL PLAYER
 		int playerX = GraphicsHandler.getPlayerCoordianteByMoveFactor(moveX, true);
@@ -284,14 +301,24 @@ public class Game {
 	
 	/**
 	 * Updatet die Felder der Map abhängig von der übertragenen MapData
-	 * @param mapData - String - Enthält die Daten über die felder der Map
+	 * @param mapNumber - int - Die Nummer der zu ladenden Map
 	 */
-	public void updateMap(String mapData) {
+	public void updateMap(int MapNumber) {
 		
 		//SYNTAX: 1,1,BL:1,2,BL: ...
 		
 		//RESETT MAP
 		resettMap();
+		
+		String mapData;
+		switch(mapNumber) {
+		case 1:
+			mapData = GameData.MAP_1;
+			break;
+		default:
+			ConsoleDebugger.printMessage("Unknown mapnumber, cant load map!");
+			return;
+		}
 		
 		//CHANGE NOT DEFAULT FIELDS
 		String[] fieldData = mapData.split(":");
@@ -317,6 +344,17 @@ public class Game {
 			}
 		}
 		
+		//TODO REMOVE
+//		for(int x = 0 ; x < GameData.MAP_DIMENSION ; x++) {
+//			for(int y = 0 ; y < GameData.MAP_DIMENSION ; y++) {
+//				if(x%2 == 0 && y%2 == 0) {
+//					this.map[x][y].changeType(FieldType.BLOCK);
+//				}else if(x%2 == 0 && y%2 == 1) {
+//					this.map[x][y].changeType(FieldType.WALL);
+//				}
+//			}
+//		}
+		
 		//RAND
 		for(int x = 0 ; x < GameData.MAP_DIMENSION ; x++) {
 			for(int y = 0 ; y < GameData.MAP_DIMENSION ; y++) {
@@ -325,6 +363,14 @@ public class Game {
 				}
 			}
 		}
+		
+		//PRINT MAP STRING
+//		for(int x = 0 ; x < GameData.MAP_DIMENSION ; x++) {
+//			for(int y = 0 ; y < GameData.MAP_DIMENSION ; y++) {
+//				ConsoleDebugger.printMessage(x+","+y+","+FieldType.getFieldTypeRepresentation(this.map[x][y].getType())+":", false);
+//			}
+//		}
+//		ConsoleDebugger.printMessage("");
 		
 	}
 	
