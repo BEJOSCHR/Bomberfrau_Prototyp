@@ -22,7 +22,7 @@ public class ConnectionData {
 	public static final String IP = "127.0.0.1";
 	public static final int TCP_PORT = 25652;
 	public static final int TIMEOUT_DELAY = 10*1000;
-	public static final int CONNECT_ATTEMPTS = 10;
+	public static final int CONNECT_ATTEMPTS = 3;
 	public static final String SPLIT_CHAR = ";";
 	
 	public static ConnectionType connectionType = ConnectionType.CLIENT;

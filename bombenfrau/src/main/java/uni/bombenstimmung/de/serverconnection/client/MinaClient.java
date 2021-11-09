@@ -37,7 +37,7 @@ public class MinaClient {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static void initClientConnection() throws IOException, InterruptedException {
+	public static boolean initClientConnection() throws IOException, InterruptedException {
 		
 		ConnectionData.connectionType = ConnectionType.CLIENT;
 		
@@ -55,7 +55,7 @@ public class MinaClient {
 		        future.awaitUninterruptibly();
 		        ConnectionData.connectionToServer = future.getSession();
 		        ConsoleDebugger.printMessage("connected!");
-		        break;
+		        return true;
 		    } catch (RuntimeIoException e) {
 		    	ConsoleDebugger.printMessage("failed!");
 //		        e.printStackTrace();
@@ -64,7 +64,7 @@ public class MinaClient {
 		    if(tryCount == ConnectionData.CONNECT_ATTEMPTS) {
 		    	//ABORT
 		    	ConsoleDebugger.printMessage("Aborting connection after "+ConnectionData.CONNECT_ATTEMPTS+" failed attempts!");
-		    	return;
+		    	return false;
 		    }
 		    tryCount++;
 		}

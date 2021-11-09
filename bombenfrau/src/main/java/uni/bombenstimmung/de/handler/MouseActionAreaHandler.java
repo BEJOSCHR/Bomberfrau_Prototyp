@@ -20,6 +20,8 @@ import uni.bombenstimmung.de.game.GameData;
 import uni.bombenstimmung.de.graphics.DisplayType;
 import uni.bombenstimmung.de.graphics.GraphicsData;
 import uni.bombenstimmung.de.objects.MouseActionArea;
+import uni.bombenstimmung.de.serverconnection.ConnectionData;
+import uni.bombenstimmung.de.serverconnection.ConnectionType;
 import uni.bombenstimmung.de.serverconnection.client.MinaClient;
 import uni.bombenstimmung.de.serverconnection.server.MinaServer;
 
@@ -59,10 +61,12 @@ public class MouseActionAreaHandler {
 			@Override
 			public void performAction_LEFT_RELEASE() {
 				try {
-					MinaClient.initClientConnection();
+					boolean result = MinaClient.initClientConnection();
+					if(result == true) {
+						GameData.runningGame = new Game(false);
+						GraphicsData.drawState = DisplayType.INGAME;
+					}
 				} catch (IOException | InterruptedException e) {}
-				GameData.runningGame = new Game(false);
-				GraphicsData.drawState = DisplayType.INGAME;
 			}
 			
 			@Override
@@ -110,8 +114,40 @@ public class MouseActionAreaHandler {
 		
 		
 		//INGAME
-		
-		
+		new MouseActionArea(GraphicsData.width/2-menu_width/2, GraphicsData.height-30-menu_height/2, menu_width, menu_height
+				, "id_StartGame", "Start", 24, Color.WHITE, Color.GREEN) {
+			
+			@Override
+			public void performAction_LEFT_RELEASE() {
+				GameData.runningGame.startGame();
+			}
+			
+			@Override
+			public boolean isActiv() {
+				return GraphicsData.drawState == DisplayType.INGAME && GameData.runningGame.isThisClientHost() && GameData.runningGame.isGameStarted() == false  && GameData.runningGame.isMovementAllowed();
+			}
+			
+		};
+		new MouseActionArea(GraphicsData.width-20-menu_width/2, GraphicsData.height-30-menu_height/2, menu_width/2, menu_height
+				, "id_LeaveGame", "Leave", 24, Color.WHITE, Color.RED) {
+			
+			@Override
+			public void performAction_LEFT_RELEASE() {
+				if(ConnectionData.connectionType == ConnectionType.CLIENT) {
+					MinaClient.disconnectFromServer();
+					GraphicsData.drawState = DisplayType.MENU;
+				}else {
+					MinaServer.shutDownServerConnection();
+					GraphicsData.drawState = DisplayType.MENU;
+				}
+			}
+			
+			@Override
+			public boolean isActiv() {
+				return GraphicsData.drawState == DisplayType.INGAME && GameData.runningGame.isThisClientHost() && GameData.runningGame.isGameStarted() == false  && GameData.runningGame.isMovementAllowed();
+			}
+			
+		};
 		
 		
 		//AFTERGAME

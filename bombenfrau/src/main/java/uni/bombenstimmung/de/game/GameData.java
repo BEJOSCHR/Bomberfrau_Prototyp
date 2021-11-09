@@ -23,4 +23,6 @@ public class GameData {
 	public static boolean isRunning = false;
 	public static Game runningGame = null;
 	
+	public static final String MAP_1 = "2,2,BL:1,2,WA:2,1,WA";
+	
 }

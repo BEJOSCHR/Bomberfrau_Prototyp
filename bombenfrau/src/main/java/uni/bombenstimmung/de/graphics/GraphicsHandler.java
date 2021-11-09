@@ -143,7 +143,7 @@ public class GraphicsHandler {
 		tempFrame.setTitle("BomberFrau - Prototyp");
 		tempFrame.setResizable(false);
 		tempFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		tempFrame.setUndecorated(false); //TODO 
+		tempFrame.setUndecorated(true); //TODO 
 		tempFrame.setVisible(true);
 		
 		tempFrame.addKeyListener(new KeyHandler());

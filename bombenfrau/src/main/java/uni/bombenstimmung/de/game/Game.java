@@ -18,6 +18,7 @@ import java.util.TimerTask;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import uni.bombenstimmung.de.graphics.GraphicsData;
 import uni.bombenstimmung.de.graphics.GraphicsHandler;
 import uni.bombenstimmung.de.handler.MovementHandler;
 import uni.bombenstimmung.de.main.ConsoleDebugger;
@@ -39,6 +40,7 @@ public class Game {
 	private boolean movementAllowed = true;
 	private int timeRemaining = GameData.COUNTDOWN_DURATION;
 	private boolean thisClientIsHost = false;
+	private String mapData = "";
 	private Field map[][] = new Field[GameData.MAP_DIMENSION][GameData.MAP_DIMENSION];
 	private List<Color> freeColors = new ArrayList<Color>();
 	
@@ -70,16 +72,7 @@ public class Game {
 				this.map[x][y] = new Field(x, y, FieldType.DEFAULT);
 			}
 		}
-		
-		//REPLACE NONE DEFAULT FIELDTYPES - Customise Map
-		for(int x = 0 ; x < GameData.MAP_DIMENSION ; x++) {
-			for(int y = 0 ; y < GameData.MAP_DIMENSION ; y++) {
-				if(x == 0 || y == 0 || x == GameData.MAP_DIMENSION-1 || y == GameData.MAP_DIMENSION-1) {
-					//RAND
-					this.map[x][y].changeType(FieldType.BORDER);
-				}
-			}
-		}
+		resettMap();
 		
 		//START MOVEMENT HANDLER
 		MovementHandler.startMovementTimer();
@@ -97,11 +90,14 @@ public class Game {
 			return;
 		}
 		
-		this.gameHasStarted = true;
-		
 		//TODO TP PLAYER vie updatePlayerPos
 		
 		//TODO SEND MAP
+		mapData = GameData.MAP_1; //TODO CHOOSE MAPE
+		for(Player player : this.players) {
+			player.sendMessage(101, mapData);
+		}
+		updateMap(mapData);
 		
 		//SEND COUNTDOWN START TO OTHERS
 		for(Player player : this.players) {
@@ -125,6 +121,7 @@ public class Game {
 				if(timeRemaining == 0) {
 					this.cancel();
 					movementAllowed = true;
+					gameHasStarted = true;
 				}
 			}
 		}, 0, 1000);
@@ -172,9 +169,13 @@ public class Game {
 		if(this.getPlayerCount() >= 4) {
 			//TODO SEND INFO TO NEW PLAYER
 			return;
+		}else if(this.gameHasStarted == true) {
+			//TODO ALLREADY STARTED
+			return;
 		}
 		
 		newPlayer.setColor(getNextFreeColor());
+		newPlayer.sendMessage(101, mapData);
 		
 		//SEND DATA TO NEW PLAYER
 		newPlayer.sendMessage(100, newPlayer.getColor().getRed()+","+newPlayer.getColor().getGreen()+","+newPlayer.getColor().getBlue());
@@ -268,6 +269,17 @@ public class Game {
 			this.map[GraphicsHandler.getCoordianteByPixel(playerX, true)][GraphicsHandler.getCoordianteByPixel(playerY, false)].drawHighlight(g, this.color);
 		}catch(IndexOutOfBoundsException error) {}
 		
+		if(this.isGameStarted() == false) {
+			int sectioHeight = 60;
+			g.setColor(Color.DARK_GRAY);
+			g.fillRect(0, GraphicsData.height-sectioHeight, GraphicsData.width, sectioHeight);
+			if(this.movementAllowed == false) {
+				GraphicsHandler.drawCentralisedText(g, Color.ORANGE, 30, ""+this.timeRemaining, GraphicsData.width/2, GraphicsData.height-sectioHeight/2);
+			}else if(this.isThisClientHost() == false) {
+				GraphicsHandler.drawCentralisedText(g, Color.ORANGE, 22, "Waiting for host to start!", GraphicsData.width/2, GraphicsData.height-sectioHeight/2);
+			}
+		}
+		
 	}
 	
 	/**
@@ -279,11 +291,7 @@ public class Game {
 		//SYNTAX: 1,1,BL:1,2,BL: ...
 		
 		//RESETT MAP
-		for(int x = 0 ; x < GameData.MAP_DIMENSION ; x++) {
-			for(int y = 0 ; y < GameData.MAP_DIMENSION ; y++) {
-				this.map[x][y].changeType(FieldType.DEFAULT);
-			}
-		}
+		resettMap();
 		
 		//CHANGE NOT DEFAULT FIELDS
 		String[] fieldData = mapData.split(":");
@@ -293,6 +301,29 @@ public class Game {
 			int y = Integer.parseInt(data[1]);
 			FieldType type = FieldType.getFieldTypeFromRepresentation(data[2]);
 			this.map[x][y].changeType(type);
+		}
+		
+	}
+	
+	/**
+	 * Setzt die map auf den Default wert zurück (Frei+Border)
+	 */
+	private void resettMap() {
+		
+		//DEFAULT
+		for(int x = 0 ; x < GameData.MAP_DIMENSION ; x++) {
+			for(int y = 0 ; y < GameData.MAP_DIMENSION ; y++) {
+				this.map[x][y].changeType(FieldType.DEFAULT);
+			}
+		}
+		
+		//RAND
+		for(int x = 0 ; x < GameData.MAP_DIMENSION ; x++) {
+			for(int y = 0 ; y < GameData.MAP_DIMENSION ; y++) {
+				if(x == 0 || y == 0 || x == GameData.MAP_DIMENSION-1 || y == GameData.MAP_DIMENSION-1) {
+					this.map[x][y].changeType(FieldType.BORDER);
+				}
+			}
 		}
 		
 	}

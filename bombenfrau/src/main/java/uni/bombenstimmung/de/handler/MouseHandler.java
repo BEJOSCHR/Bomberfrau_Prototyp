@@ -18,7 +18,8 @@ import uni.bombenstimmung.de.objects.MouseActionArea;
 
 public class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelListener {
 
-	private static final int MAPPING_X = 7, MAPPING_Y = 29;
+//	private static final int MAPPING_X = 7, MAPPING_Y = 29;
+	private static final int MAPPING_X = 0, MAPPING_Y = 0;
 	private static int mouseX = 0, mouseY = 0;
 	
 	public void mouseWheelMoved(MouseWheelEvent e) {}

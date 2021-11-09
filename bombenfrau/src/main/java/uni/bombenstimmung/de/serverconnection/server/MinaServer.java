@@ -57,9 +57,11 @@ public class MinaServer {
 		}
 		ConnectionData.connectedPlayer.clear();
 		
-		ConnectionData.serverAcceptor.unbind();
-		ConnectionData.serverAcceptor.dispose();
-		ConnectionData.serverAcceptor = null;
+		if(ConnectionData.serverAcceptor != null) {
+			ConnectionData.serverAcceptor.unbind();
+			ConnectionData.serverAcceptor.dispose();
+			ConnectionData.serverAcceptor = null;
+		}
 		
 	}
 	
