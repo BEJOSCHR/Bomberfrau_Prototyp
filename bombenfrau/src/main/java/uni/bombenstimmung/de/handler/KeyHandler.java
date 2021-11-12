@@ -25,6 +25,9 @@ public class KeyHandler implements KeyListener {
 		int keyCode = e.getKeyCode();
 		
 		switch(keyCode) {
+		case KeyEvent.VK_SPACE:
+			MovementHandler.wantsToPlaceBomb = true;
+			break;
 		case KeyEvent.VK_W:
 			MovementHandler.movementValue = 1;
 			break;
@@ -53,6 +56,9 @@ public class KeyHandler implements KeyListener {
 		int keyCode = e.getKeyCode();
 		
 		switch(keyCode) {
+		case KeyEvent.VK_SPACE:
+			MovementHandler.wantsToPlaceBomb = false;
+			break;
 		case KeyEvent.VK_W:
 			if(MovementHandler.movementValue == 1) {
 				MovementHandler.movementValue = 0;

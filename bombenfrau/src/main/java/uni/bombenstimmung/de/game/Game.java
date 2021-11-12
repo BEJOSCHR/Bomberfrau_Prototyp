@@ -23,6 +23,7 @@ import uni.bombenstimmung.de.graphics.GraphicsData;
 import uni.bombenstimmung.de.graphics.GraphicsHandler;
 import uni.bombenstimmung.de.handler.MovementHandler;
 import uni.bombenstimmung.de.main.ConsoleDebugger;
+import uni.bombenstimmung.de.objects.Bomb;
 import uni.bombenstimmung.de.objects.Player;
 import uni.bombenstimmung.de.serverconnection.ConnectionData;
 import uni.bombenstimmung.de.serverconnection.ConnectionType;
@@ -32,17 +33,22 @@ public class Game {
 	//Local Client Data
 	private Color color = Color.RED;
 	private int moveX = (GameData.MAP_DIMENSION/2)*GameData.FIELD_DIMENSION, moveY = moveX;
+	private boolean exploded = false;
 	
 	//Other Client Data
 	private List<Player> players = new ArrayList<Player>();
 	
 	//General Data
 	private boolean gameHasStarted = false;
+	private boolean gameHasFinished = false;
 	private boolean movementAllowed = true;
 	private int timeRemaining = GameData.COUNTDOWN_DURATION;
 	private boolean thisClientIsHost = false;
 	private int mapNumber = 1;
 	private Field map[][] = new Field[GameData.MAP_DIMENSION][GameData.MAP_DIMENSION];
+	private List<Bomb> bombs = new ArrayList<Bomb>();
+	private Timer bombTickTimer = null;
+	private int placedBombs = 0;
 	private List<Color> freeColors = new ArrayList<Color>();
 	
 	/**
@@ -91,7 +97,7 @@ public class Game {
 			return;
 		}
 		
-		//TODO TP PLAYER vie updatePlayerPos
+		//TP PLAYER vie updatePlayerPos
 		updatePlayerPos(0, (int) (1*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0), (int) (1*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0));
 		if(this.players.size() >= 1) {
 			updatePlayerPos(this.players.get(0).getId(), (int) ((GameData.MAP_DIMENSION-2)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0), (int) ((GameData.MAP_DIMENSION-2)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0));
@@ -103,7 +109,7 @@ public class Game {
 			updatePlayerPos(this.players.get(2).getId(), (int) ((GameData.MAP_DIMENSION-2)*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0), (int) (1*GameData.FIELD_DIMENSION+GameData.FIELD_DIMENSION/2.0));
 		}
 		
-		//TODO SEND MAP
+		//SEND MAP
 		mapNumber = 1; //TODO CHOOSE MAPE
 		for(Player player : this.players) {
 			player.sendMessage(101, mapNumber+"");
@@ -124,6 +130,11 @@ public class Game {
 		
 		this.timeRemaining = GameData.COUNTDOWN_DURATION;
 		this.movementAllowed = false;
+		this.gameHasFinished = false;
+		
+		//CLEAR BOMBS
+		this.bombs.clear();
+		startBombTickTimer();
 		
 		new Timer().scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -167,6 +178,112 @@ public class Game {
 			this.moveX = newMoveFactorX;
 			this.moveY = newMoveFactorY;
 		}
+		
+	}
+	
+	/**
+	 * Startet den Timer der die Bomben-Livetime updatet (jede Sekunde -1)
+	 */
+	private void startBombTickTimer() {
+		
+		if(this.bombTickTimer == null) {
+			
+			this.bombTickTimer = new Timer();
+			this.bombTickTimer.scheduleAtFixedRate(new TimerTask() {
+				@Override
+				public void run() {
+					
+					if(GameData.runningGame == null) {
+						this.cancel();
+						bombTickTimer = null;
+					}
+					
+					try {
+						for(Bomb bomb : bombs) {
+							bomb.reduceLiveTime();
+						}
+					}catch(ConcurrentModificationException error) {}
+					
+				}
+			}, 0, 1000);
+			
+		}
+		
+	}
+	
+	/**
+	 * Wird von der Client-Connection oder LOKAL aufgerufen und erzeugt eine Bombe
+	 * @param playerID - int - Die ID des Spielers der die Bombe gelegt hat
+	 * @param x - int- Die X-Koordinate wo die Bombe platziert werden soll
+	 * @param y - int- Die Y-Koordinate wo die Bombe platziert werden soll
+	 */
+	public void registerBomb(int playerID, int x, int y) {
+		
+		int liveTime = GameData.BOMB_LIVETIME;
+		int explodeRadius = GameData.BOMB_EXPLODE_RADIUS;
+		
+		if(playerID == 0) {
+			//LOKAL
+			this.placedBombs++;
+			if(this.placedBombs > 2) {
+				this.placedBombs--;
+				return; //LIMIT REACHED
+			}
+		}else {
+			for(Player player : this.players) {
+				if(player.getId() == playerID) {
+					player.increaseBombCOunt();
+					if(player.getPlacedBombs() > 2) {
+						player.decreaseBombCOunt();
+						return; //LIMIT REACHED
+					}
+				}
+			}
+		}
+		
+		for(Player player : this.players) {
+			player.sendMessage(500, playerID+":"+x+":"+y+":"+liveTime+":"+explodeRadius);
+		}
+		
+		Bomb bomb = new Bomb(playerID, x, y, liveTime, explodeRadius);
+		this.bombs.add(bomb);
+		
+	}
+	
+	/**
+	 * Wird von der Client-Connection aufgerufen und fügt eine Bombe hinzu
+	 * @param playerID - int - Die ID des Spielers der die Bombe gelegt hat
+	 * @param x - int- Die X-Koordinate wo die Bombe platziert werden soll
+	 * @param y - int- Die Y-Koordinate wo die Bombe platziert werden soll
+	 */
+	public void addBomb(int playerID, int x, int y, int liveTime, int explodRadius) {
+		
+		Bomb bomb = new Bomb(playerID, x, y, liveTime, explodRadius);
+		this.bombs.add(bomb);
+		
+	}
+	
+	public void removeBomb(int x, int y) {
+		
+		for(Bomb bomb : this.bombs) {
+			if(bomb.getX() == x && bomb.getY() == y) {
+				this.bombs.remove(bomb);
+				if(bomb.getPlayerID() == 0) {
+					//LOKAL
+					this.placedBombs--;
+				}else {
+					for(Player player : this.players) {
+						if(player.getId() == bomb.getPlayerID()) {
+							player.decreaseBombCOunt();
+						}
+					}
+				}
+
+				return;
+			}
+		}
+		
+		ConsoleDebugger.printMessage("Removing bomb on "+x+":"+y+" found no bomb!");
 		
 	}
 	
@@ -270,22 +387,47 @@ public class Game {
 			}
 		}
 		
+		//BOMBS
+		try {
+			for(Bomb bomb : this.bombs) {
+				bomb.draw(g);
+			}
+		}catch(ConcurrentModificationException error) {}
+		
 		//OTHER PLAYER
 		try {
 			for(Player player : this.players) {
-				player.draw(g);
+				if(player.isExploded() == false) {
+					player.draw(g);
+				}
 			}
 		}catch(ConcurrentModificationException error) {}
 		
 		//LOKAL PLAYER
-		int playerX = GraphicsHandler.getPlayerCoordianteByMoveFactor(moveX, true);
-		int playerY = GraphicsHandler.getPlayerCoordianteByMoveFactor(moveY, false);
-		g.setColor(this.color);
-		g.fillOval(playerX-GameData.FIELD_DIMENSION/2, playerY-GameData.FIELD_DIMENSION/2, GameData.PLAYER_DIMENSION, GameData.PLAYER_DIMENSION);		
-		try {
-			this.map[GraphicsHandler.getCoordianteByPixel(playerX, true)][GraphicsHandler.getCoordianteByPixel(playerY, false)].drawHighlight(g, this.color);
-		}catch(IndexOutOfBoundsException error) {}
+		if(this.isExploded() == false) {
+			int playerX = GraphicsHandler.getPlayerCoordianteByMoveFactor(moveX, true);
+			int playerY = GraphicsHandler.getPlayerCoordianteByMoveFactor(moveY, false);
+			g.setColor(this.color);
+			g.fillOval(playerX-GameData.FIELD_DIMENSION/2, playerY-GameData.FIELD_DIMENSION/2, GameData.PLAYER_DIMENSION, GameData.PLAYER_DIMENSION);		
+			try {
+				this.map[GraphicsHandler.getCoordianteByPixel(playerX, true)][GraphicsHandler.getCoordianteByPixel(playerY, false)].drawHighlight(g, this.color);
+			}catch(IndexOutOfBoundsException error) {}
+		}
 		
+		//FINISHED
+		if(this.isGameFinished()) {
+			boolean won = !this.isExploded();
+			int height = 120;
+			g.setColor(Color.DARK_GRAY);
+			g.fillRect(0, GraphicsData.height/2-height/2, GraphicsData.width, height);
+			if(won == true) {
+				GraphicsHandler.drawCentralisedText(g, Color.GREEN, 80, "You won!!!", GraphicsData.width/2, GraphicsData.height/2);
+			}else {
+				GraphicsHandler.drawCentralisedText(g, Color.RED, 80, "You lost!!!", GraphicsData.width/2, GraphicsData.height/2);
+			}
+		}
+		
+		//MENU ZEILE
 		if(this.isGameStarted() == false) {
 			int sectioHeight = 60;
 			g.setColor(Color.DARK_GRAY);
@@ -392,6 +534,24 @@ public class Game {
 		
 	}
 	
+	/**
+	 * Bringt den LOKALEN Spieler wieder zurück (Zb wenn eine neue Runde startet)
+	 */
+	public void revive() {
+		
+		this.exploded = false;
+		
+	}
+	
+	/**
+	 * Triggered wenn der LOKALE Spieler von einer Bombe getroffen weird
+	 */
+	public void explode() {
+		
+		this.exploded = true;
+		
+	}
+	
 	public void setColor(Color color) {
 		this.color = color;
 	}
@@ -399,6 +559,9 @@ public class Game {
 		return color;
 	}
 	
+	public boolean isExploded() {
+		return exploded;
+	}
 	public int getMoveX() {
 		return moveX;
 	}
@@ -428,8 +591,21 @@ public class Game {
 		return players.size()+1; //LOKALER PLAYER IST NICHT IN DER LISTE
 	}
 	
+	public List<Bomb> getBombs() {
+		return bombs;
+	}
+	public int getPlacedBombs() {
+		return placedBombs;
+	}
+	
 	public boolean isGameStarted() {
 		return gameHasStarted;
+	}
+	public boolean isGameFinished() {
+		return gameHasFinished;
+	}
+	public void finishGame() {
+		this.gameHasFinished = true;
 	}
 	public boolean isMovementAllowed() {
 		return movementAllowed;

@@ -81,6 +81,14 @@ public class MinaServer {
 			int newMoveFactorY = Integer.parseInt(data[1]);
 			GameData.runningGame.updatePlayerPos(sender.getId(), newMoveFactorX, newMoveFactorY);
 			break;
+		case 500:
+			//Bomb placement
+			String[] data1 = message.split(":");
+			int playerID = Integer.parseInt(data1[0]);
+			int bombX = Integer.parseInt(data1[1]);
+			int bombY = Integer.parseInt(data1[2]);
+			GameData.runningGame.registerBomb(playerID, bombX, bombY);
+			break;
 		case 999:
 			//DISCONNECT
 			MinaServer.clientDisconnected(sender);

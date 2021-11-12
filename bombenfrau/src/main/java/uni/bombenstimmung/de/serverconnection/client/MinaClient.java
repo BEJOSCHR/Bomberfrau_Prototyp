@@ -134,6 +134,16 @@ public class MinaClient {
 			int newMoveFactorY = Integer.parseInt(data1[2]);
 			GameData.runningGame.updatePlayerPos(playerID, newMoveFactorX, newMoveFactorY);
 			break;
+		case 500:
+			//Add Bomb
+			String[] data2 = message.split(":");
+			int placerID = Integer.parseInt(data2[0]);
+			int bombX = Integer.parseInt(data2[1]);
+			int bombY = Integer.parseInt(data2[2]);
+			int liveTime = Integer.parseInt(data2[3]);
+			int explodeRadius = Integer.parseInt(data2[4]);
+			GameData.runningGame.addBomb(placerID, bombX, bombY, liveTime, explodeRadius);
+			break;
 		case 999:
 			//FORCED DISCONECT
 			ConnectionData.connectionToServer.closeNow();

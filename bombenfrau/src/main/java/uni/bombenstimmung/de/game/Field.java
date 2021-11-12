@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 import uni.bombenstimmung.de.graphics.GraphicsHandler;
+import uni.bombenstimmung.de.objects.Player;
 
 public class Field {
 
@@ -30,6 +31,51 @@ public class Field {
 		this.X = X;
 		this.Y = Y;
 		this.type = type;
+		
+	}
+	
+	/**
+	 * Wird aufgerufen wenn eine Bombe dieses Feld trifft
+	 */
+	public void explode() {
+		
+		int lokalPlayerX = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(GameData.runningGame.getMoveX(), true), true);
+		int lokalPlayerY = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(GameData.runningGame.getMoveY(), false), false);
+		if(lokalPlayerX == this.X && lokalPlayerY == this.Y) {
+			//THIS PLAYER HIT
+			if(GameData.runningGame.isExploded() == false) {
+				GameData.runningGame.explode();
+			}
+		}
+		
+		for(Player player : GameData.runningGame.getPlayers()) {
+			int playerX = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(player.getX(), true), true);
+			int playerY = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(player.getY(), false), false);
+			if(playerX == this.X && playerY == this.Y) {
+				//PLAYER HIT
+				if(player.isExploded() == false) {
+					player.explode();
+				}
+			}
+		}
+		
+		if(this.type == FieldType.WALL) {
+			this.changeType(FieldType.DEFAULT);
+		}
+		
+		//CHECK FOR WIN
+		int alive = 0;
+		if(GameData.runningGame.isExploded() == false) {
+			alive++;
+		}
+		for(Player player : GameData.runningGame.getPlayers()) {
+			if(player.isExploded() == false) {
+				alive++;
+			}
+		}
+		if(alive <= 1) {
+			GameData.runningGame.finishGame();
+		}
 		
 	}
 	

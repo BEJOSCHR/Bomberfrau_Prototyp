@@ -28,6 +28,10 @@ public class Player {
 	private int x = (GameData.MAP_DIMENSION/2)*GameData.FIELD_DIMENSION, y = x;
 	private Color color = Color.PINK;
 	
+	private int placedBombs = 0;
+	
+	private boolean exploded = false;
+	
 	/**
 	 * Das Spieler Objekt das für den Server den jeweilig verbundenen Spieler repräsentiert.
 	 * Vorallem seine Connection-Session und seine ID werden hier verwaltet (ID wird automatisch zugewiesen und automatisch hochgezählt)
@@ -52,6 +56,24 @@ public class Player {
 		
 		this.id = id;
 		this.color = color;
+		
+	}
+	
+	/**
+	 * Bringt den Spieler wieder zurück (Zb wenn eine neue Runde startet)
+	 */
+	public void revive() {
+		
+		this.exploded = false;
+		
+	}
+	
+	/**
+	 * Triggered wenn der Spieler von einer Bombe getroffen weird
+	 */
+	public void explode() {
+		
+		this.exploded = true;
 		
 	}
 	
@@ -117,6 +139,19 @@ public class Player {
 		return this.id+":"+this.color.getRed()+","+this.color.getGreen()+","+this.color.getBlue()+":"+this.x+":"+this.y;
 	}
 	
+	public int getPlacedBombs() {
+		return placedBombs;
+	}
+	public void increaseBombCOunt() {
+		this.placedBombs++;
+	}
+	public void decreaseBombCOunt() {
+		this.placedBombs--;
+	}
+	
+	public boolean isExploded() {
+		return exploded;
+	}
 	public void setColor(Color newColor) {
 		this.color = newColor;
 	}

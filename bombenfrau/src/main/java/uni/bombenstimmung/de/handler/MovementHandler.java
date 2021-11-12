@@ -16,6 +16,7 @@ public class MovementHandler {
 
 	public static final int PIXEL_MOVEMENT_PER_TICK = 6;
 	
+	public static boolean wantsToPlaceBomb = false;
 	public static int movementValue = 0;
 	private static Timer movementTimer = null;
 	
@@ -40,7 +41,24 @@ public class MovementHandler {
 						return;
 					}
 					
-					if(GameData.runningGame.isMovementAllowed() && awaitingMoveUpdate == false) {
+					if(GameData.runningGame.isMovementAllowed() && GameData.runningGame.isGameFinished() == false && GameData.runningGame.isExploded() == false && awaitingMoveUpdate == false) {
+						
+						//BOMB
+						if(GameData.runningGame.isGameStarted()) {
+							int fieldX = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(GameData.runningGame.getMoveX(), true), true);
+							int fieldY = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(GameData.runningGame.getMoveY(), false), false);
+							if(wantsToPlaceBomb == true) {
+								if(GameData.runningGame.getPlacedBombs() < 2) {
+									if(ConnectionData.connectionType == ConnectionType.CLIENT) {
+										MinaClient.sendMessageToServer(500, ConnectionData.clientID+":"+fieldX+":"+fieldY);
+									}else {
+										GameData.runningGame.registerBomb(0, fieldX, fieldY);
+									}
+								}
+							}
+						}
+						
+						//MOVEMENT
 						switch(movementValue) {
 						case 1:
 							//UP
@@ -91,6 +109,7 @@ public class MovementHandler {
 							}
 							break;
 						}
+						
 					}
 					
 				}
@@ -130,8 +149,10 @@ public class MovementHandler {
 		if(GameData.runningGame == null) {
 			return false;
 		}else {
+			//BEGEHBARES FELD
 			Field field = GameData.runningGame.getMap()[fieldX][fieldY];
 			if(field.getType() == FieldType.DEFAULT) {
+				//KEIN SPIELER
 				for(Player player : GameData.runningGame.getPlayers()) {
 					int playerX = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(player.getX(), true), true);
 					int playerY = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(player.getY(), false), false);
@@ -139,6 +160,12 @@ public class MovementHandler {
 						return false;
 					}
 				}
+				//KEINE BOMBE
+//				for(Bomb bomb : GameData.runningGame.getBombs()) {
+//					if(bomb.getX() == fieldX && bomb.getY() == fieldY) {
+//						return false;
+//					}
+//				}
 				return true;
 			}else {
 				return false;
