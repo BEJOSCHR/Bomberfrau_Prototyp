@@ -18,7 +18,7 @@ public class BomberfrauPrototypMain {
 	public static final String VERSION = "Prototyp - Alpha - V0.0.1";
 	
 	/**
-	 * Der Start von allem (in diesem Projekt)
+	 * Der Start von allem (in diesem Projekt) !!!
 	 * @param args Die Argumente die dem Start mitgegeben werden können
 	 */
 	public static void main(String[] args) {
