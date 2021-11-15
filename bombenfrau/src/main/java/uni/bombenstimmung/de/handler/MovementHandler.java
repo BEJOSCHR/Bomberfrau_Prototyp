@@ -48,13 +48,13 @@ public class MovementHandler {
 							int fieldX = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(GameData.runningGame.getMoveX(), true), true);
 							int fieldY = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(GameData.runningGame.getMoveY(), false), false);
 							if(wantsToPlaceBomb == true) {
-								if(GameData.runningGame.getPlacedBombs() < 2) {
+//								if(GameData.runningGame.getPlacedBombs() < 2) {
 									if(ConnectionData.connectionType == ConnectionType.CLIENT) {
 										MinaClient.sendMessageToServer(500, ConnectionData.clientID+":"+fieldX+":"+fieldY);
 									}else {
 										GameData.runningGame.registerBomb(0, fieldX, fieldY);
 									}
-								}
+//								}
 							}
 						}
 						
@@ -146,7 +146,7 @@ public class MovementHandler {
 		int fieldX = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(moveX, true), true);
 		int fieldY = GraphicsHandler.getCoordianteByPixel(GraphicsHandler.getPlayerCoordianteByMoveFactor(moveY, false), false);
 		
-		if(GameData.runningGame == null) {
+		if(GameData.runningGame == null || GameData.runningGame.getMap() == null || GameData.runningGame.getMap().length == 0) {
 			return false;
 		}else {
 			//BEGEHBARES FELD

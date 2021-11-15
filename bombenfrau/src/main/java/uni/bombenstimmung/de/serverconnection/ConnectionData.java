@@ -19,8 +19,8 @@ import uni.bombenstimmung.de.objects.Player;
 
 public class ConnectionData {
 
-//	public static final String IP = "25.43.175.192";
-	public static final String IP = "127.0.0.1";
+	public static final String IP = "46.142.146.100";
+//	public static final String IP = "127.0.0.1";
 	public static final int TCP_PORT = 25652;
 	public static final int TIMEOUT_DELAY = 10*1000;
 	public static final int CONNECT_ATTEMPTS = 3;
